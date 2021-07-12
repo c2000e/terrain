@@ -1,3 +1,4 @@
+#include "camera.h"
 #include "glh/buffer.h"
 #include "glh/shader.h"
 
@@ -10,6 +11,22 @@
 #include <stdbool.h>
 
 const int WIDTH = 512, HEIGHT = 512;
+
+void Camera_update(Camera* camera)
+{
+    int dx, dy;
+    SDL_GetRelativeMouseState(&dx, &dy);
+    Camera_updateRotation(camera, dx, -dy);
+
+    const Uint8* kb = SDL_GetKeyboardState(NULL);
+    float x = kb[SDL_SCANCODE_D] - kb[SDL_SCANCODE_A];
+    float y = kb[SDL_SCANCODE_SPACE] - kb[SDL_SCANCODE_LSHIFT];
+    float z = kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S];
+    Camera_updatePosition(camera, x, y, z);
+    
+    Camera_updateVectors(camera);
+    Camera_updateMatrix(camera);
+}
 
 int main(int argc, char** argv)
 {
@@ -38,6 +55,11 @@ int main(int argc, char** argv)
         fprintf(stderr, "SDL GL CONTEXT ERROR: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
     }
+
+    SDL_ShowCursor(SDL_DISABLE);
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
+    Camera camera = Camera_create(0, 0, 3, -90, 0);
 
     gladLoadGLLoader(SDL_GL_GetProcAddress);
     
@@ -70,6 +92,8 @@ int main(int argc, char** argv)
     Shader shader = Shader_create("shaders/basic.vs", "shaders/basic.fs");
     glUseProgram(shader.program);
 
+    GLint cam_loc = glGetUniformLocation(shader.program, "camera");
+
     SDL_Event window_event;
     while (true)
     {
@@ -81,14 +105,22 @@ int main(int argc, char** argv)
             }
             switch (window_event.key.keysym.sym)
             {
+                case SDLK_ESCAPE:
+                    SDL_ShowCursor(SDL_ENABLE);
+                    SDL_SetRelativeMouseMode(SDL_FALSE);
+                    break;
                 case SDLK_r:
                     Shader_reload(&shader);
                     glUseProgram(shader.program);
+                    cam_loc = glGetUniformLocation(shader.program, "camera");
                     break;
             }
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        Camera_update(&camera);
+        glUniformMatrix4fv(cam_loc, 1, GL_FALSE, camera.matrix[0]);
 
         glBindVertexArray(vertex_array);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
