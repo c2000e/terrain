@@ -1,51 +1,55 @@
 #include "chunk.h"
 
-const int CHUNK_RADIUS = 8;
+const int CHUNK_WIDTH = 16;
 
-Chunk Chunk_create(float x, float y, float z)
+Chunk Chunk_create(int x, int y, int z)
 {
     Chunk chunk;
 
-    chunk.center[0] = x;
-    chunk.center[1] = y;
-    chunk.center[2] = z;
+    chunk.id[0] = x;
+    chunk.id[1] = y;
+    chunk.id[2] = z;
+
+    chunk.origin[0] = x * CHUNK_WIDTH;
+    chunk.origin[1] = y * CHUNK_WIDTH;
+    chunk.origin[2] = z * CHUNK_WIDTH;
 
     return chunk;
 }
 
-void Cube_corners(const float center[3], float radius, float corners[24])
+void Cube_corners(const float origin[3], float width, float corners[24])
 {
-    corners[0]  = center[0] - radius;
-    corners[1]  = center[1] - radius;
-    corners[2]  = center[2] - radius;
+    corners[0]  = origin[0];
+    corners[1]  = origin[1];
+    corners[2]  = origin[2];
 
-    corners[3]  = center[0] + radius;
-    corners[4]  = center[1] - radius;
-    corners[5]  = center[2] - radius;
+    corners[3]  = origin[0] + width;
+    corners[4]  = origin[1];
+    corners[5]  = origin[2];
+    
+    corners[6]  = origin[0] + width;
+    corners[7]  = origin[1];
+    corners[8]  = origin[2] + width;
 
-    corners[6]  = center[0] + radius;
-    corners[7]  = center[1] - radius;
-    corners[8]  = center[2] + radius;
+    corners[9]  = origin[0];
+    corners[10] = origin[1];
+    corners[11] = origin[2] + width;
 
-    corners[9]  = center[0] - radius;
-    corners[10] = center[1] - radius;
-    corners[11] = center[2] + radius;
+    corners[12] = origin[0];
+    corners[13] = origin[1] + width;
+    corners[14] = origin[2];
 
-    corners[12] = center[0] - radius;
-    corners[13] = center[1] + radius;
-    corners[14] = center[2] - radius;
+    corners[15] = origin[0] + width;
+    corners[16] = origin[1] + width;
+    corners[17] = origin[2];
 
-    corners[15] = center[0] + radius;
-    corners[16] = center[1] + radius;
-    corners[17] = center[2] - radius;
+    corners[18] = origin[0] + width;
+    corners[19] = origin[1] + width;
+    corners[20] = origin[2] + width;
 
-    corners[18] = center[0] + radius;
-    corners[19] = center[1] + radius;
-    corners[20] = center[2] + radius;
-
-    corners[21] = center[0] - radius;
-    corners[22] = center[1] + radius;
-    corners[23] = center[2] + radius;
+    corners[21] = origin[0];
+    corners[22] = origin[1] + width;
+    corners[23] = origin[2] + width;
 }
 
 void Cube_outlineIndices(unsigned int offset, unsigned int indices[24])
@@ -84,6 +88,6 @@ void Cube_outlineIndices(unsigned int offset, unsigned int indices[24])
 void Chunk_outline(const Chunk* chunk, float corners[24],
         unsigned int offset, unsigned int indices[24])
 {
-    Cube_corners(chunk->center, CHUNK_RADIUS, corners);
+    Cube_corners(chunk->origin, CHUNK_WIDTH, corners);
     Cube_outlineIndices(offset, indices);
 }

@@ -6,7 +6,7 @@
 typedef struct {
     int radius;
     int chunk_count;
-    int center[3];
+    int origin[3];
     int* offsets;
     Chunk* chunks;
 } ChunkManager;

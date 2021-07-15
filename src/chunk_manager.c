@@ -17,9 +17,9 @@ int ChunkManager_offsets(int radius, int* offsets)
                 {
                     if (offsets != NULL)
                     {
-                        offsets[count] = x * 2 * CHUNK_RADIUS;
-                        offsets[count + 1] = y * 2 * CHUNK_RADIUS;
-                        offsets[count + 2] = z * 2 * CHUNK_RADIUS;
+                        offsets[count] = x;
+                        offsets[count + 1] = y;
+                        offsets[count + 2] = z;
                     }
                     count += 3;
                 }
@@ -27,6 +27,28 @@ int ChunkManager_offsets(int radius, int* offsets)
         }
     }
     return count;
+}
+
+void ChunkManager_worldToChunk(const float src[3], int dst[3])
+{
+    dst[0] = (int)floor(src[0] / CHUNK_WIDTH);
+    dst[1] = (int)floor(src[1] / CHUNK_WIDTH);
+    dst[2] = (int)floor(src[2] / CHUNK_WIDTH);
+}
+
+void ChunkManager_recenter(ChunkManager* chunk_manager, const int origin[3])
+{
+    chunk_manager->origin[0] = origin[0];
+    chunk_manager->origin[1] = origin[1];
+    chunk_manager->origin[2] = origin[2];
+    for (int i = 0; i < chunk_manager->chunk_count; i++)
+    {
+        chunk_manager->chunks[i] = Chunk_create(
+                origin[0] + chunk_manager->offsets[i * 3],
+                origin[1] + chunk_manager->offsets[i * 3 + 1],
+                origin[2] + chunk_manager->offsets[i * 3 + 2]
+        );
+    }
 }
 
 ChunkManager ChunkManager_create(int radius, float player[3])
@@ -43,35 +65,20 @@ ChunkManager ChunkManager_create(int radius, float player[3])
     chunk_manager.chunks = (Chunk*)malloc(chunk_manager.chunk_count
            * sizeof(Chunk));
     
-    chunk_manager.center[0] = 0;
-    chunk_manager.center[1] = 0;
-    chunk_manager.center[2] = 0;
-    ChunkManager_update(&chunk_manager, player);
+    ChunkManager_worldToChunk(player, chunk_manager.origin);
+    ChunkManager_recenter(&chunk_manager, chunk_manager.origin);
 
     return chunk_manager;
 }
 
 void ChunkManager_update(ChunkManager* chunk_manager, float player[3])
 {
-    int chunk_x = (int)floor(player[0] / (2 * CHUNK_RADIUS));
-    int chunk_y = (int)floor(player[1] / (2 * CHUNK_RADIUS));
-    int chunk_z = (int)floor(player[2] / (2 * CHUNK_RADIUS));
-    chunk_x = chunk_x * 2 * CHUNK_RADIUS + CHUNK_RADIUS;
-    chunk_y = chunk_y * 2 * CHUNK_RADIUS + CHUNK_RADIUS;
-    chunk_z = chunk_z * 2 * CHUNK_RADIUS + CHUNK_RADIUS;
-    if (chunk_x != chunk_manager->center[0] || chunk_y
-            != chunk_manager->center[1] || chunk_z != chunk_manager->center[2])
+    int new_origin[3];
+    ChunkManager_worldToChunk(player, new_origin);
+    if (new_origin[0] != chunk_manager->origin[0]
+            || new_origin[1] != chunk_manager->origin[1]
+            || new_origin[2] != chunk_manager->origin[2])
     {
-        chunk_manager->center[0] = chunk_x;
-        chunk_manager->center[1] = chunk_y;
-        chunk_manager->center[2] = chunk_z;
-        for (int i = 0; i < chunk_manager->chunk_count; i++)
-        {
-            chunk_manager->chunks[i] = Chunk_create(
-                    chunk_x + chunk_manager->offsets[i * 3],
-                    chunk_y + chunk_manager->offsets[i * 3 + 1],
-                    chunk_z + chunk_manager->offsets[i * 3 + 2]
-            );
-        }
+        ChunkManager_recenter(chunk_manager, new_origin);
     }
 }
