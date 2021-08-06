@@ -4,15 +4,22 @@
 #include "chunk.h"
 
 typedef struct {
+    IVec3 origin;
     int radius;
-    int chunk_count;
-    int origin[3];
-    int* offsets;
-    Chunk* chunks;
+
+    SDF f;
+    float isolevel;
+
+    unsigned int chunk_count;
+    IVec3 *offsets;
+    Chunk *chunks;
 } ChunkManager;
 
-ChunkManager ChunkManager_create(int radius, float player[3]);
+ChunkManager ChunkManager_create(const Vec3 target, int radius, SDF f,
+        float isolevel);
 
-void ChunkManager_update(ChunkManager* chunk_manager, float player[3]);
+void ChunkManager_recenter(ChunkManager *cm, const Vec3 target);
+
+void ChunkManager_drawChunks(const ChunkManager *cm);
 
 #endif

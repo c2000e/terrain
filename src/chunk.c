@@ -1,93 +1,99 @@
 #include "chunk.h"
+#include "marching_cubes.h"
 
-const int CHUNK_WIDTH = 16;
-
-Chunk Chunk_create(int x, int y, int z)
+void Chunk_init(Chunk *chunk, IVec3 id)
 {
-    Chunk chunk;
+    chunk->id[0] = id[0];
+    chunk->id[1] = id[1];
+    chunk->id[2] = id[2];
 
-    chunk.id[0] = x;
-    chunk.id[1] = y;
-    chunk.id[2] = z;
+    chunk->vertex_count = 0;
 
-    chunk.origin[0] = x * CHUNK_WIDTH;
-    chunk.origin[1] = y * CHUNK_WIDTH;
-    chunk.origin[2] = z * CHUNK_WIDTH;
+    glGenVertexArrays(1, &chunk->vao);
+    glBindVertexArray(chunk->vao);
 
-    return chunk;
+    glGenBuffers(1, &chunk->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, chunk->vbo);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
 }
 
-void Cube_corners(const float origin[3], float width, float corners[24])
+void Chunk_origin(const Chunk *chunk, Vec3 origin)
 {
-    corners[0]  = origin[0];
-    corners[1]  = origin[1];
-    corners[2]  = origin[2];
+    origin[0] = chunk->id[0] * CHUNK_WIDTH;
+    origin[1] = chunk->id[1] * CHUNK_WIDTH;
+    origin[2] = chunk->id[2] * CHUNK_WIDTH;
+}
 
-    corners[3]  = origin[0] + width;
-    corners[4]  = origin[1];
-    corners[5]  = origin[2];
+static void Cube_corners(const Vec3 origin, float width, Vec3 corners[8])
+{
+    corners[0][0] = origin[0];
+    corners[0][1] = origin[1];
+    corners[0][2] = origin[2];
+
+    corners[1][0] = origin[0] + width;
+    corners[1][1] = origin[1];
+    corners[1][2] = origin[2];
     
-    corners[6]  = origin[0] + width;
-    corners[7]  = origin[1];
-    corners[8]  = origin[2] + width;
+    corners[2][0] = origin[0] + width;
+    corners[2][1] = origin[1];
+    corners[2][2] = origin[2] + width;
 
-    corners[9]  = origin[0];
-    corners[10] = origin[1];
-    corners[11] = origin[2] + width;
+    corners[3][0] = origin[0];
+    corners[3][1] = origin[1];
+    corners[3][2] = origin[2] + width;
 
-    corners[12] = origin[0];
-    corners[13] = origin[1] + width;
-    corners[14] = origin[2];
+    corners[4][0] = origin[0];
+    corners[4][1] = origin[1] + width;
+    corners[4][2] = origin[2];
 
-    corners[15] = origin[0] + width;
-    corners[16] = origin[1] + width;
-    corners[17] = origin[2];
+    corners[5][0] = origin[0] + width;
+    corners[5][1] = origin[1] + width;
+    corners[5][2] = origin[2];
 
-    corners[18] = origin[0] + width;
-    corners[19] = origin[1] + width;
-    corners[20] = origin[2] + width;
+    corners[6][0] = origin[0] + width;
+    corners[6][1] = origin[1] + width;
+    corners[6][2] = origin[2] + width;
 
-    corners[21] = origin[0];
-    corners[22] = origin[1] + width;
-    corners[23] = origin[2] + width;
+    corners[7][0] = origin[0];
+    corners[7][1] = origin[1] + width;
+    corners[7][2] = origin[2] + width;
 }
 
-void Cube_outlineIndices(unsigned int offset, unsigned int indices[24])
+void Chunk_meshify(Chunk *chunk, SDF f, float isolevel)
 {
-    // Bottom edges
-    indices[0] = 0 + offset;
-    indices[1] = 1 + offset;
-    indices[2] = 1 + offset;
-    indices[3] = 2 + offset;
-    indices[4] = 2 + offset;
-    indices[5] = 3 + offset;
-    indices[6] = 3 + offset;
-    indices[7] = 0 + offset;
+    chunk->vertex_count = 0;
+    for (int i = 0; i < CHUNK_WIDTH; i++)
+    {
+        for (int j = 0; j < CHUNK_WIDTH; j++)
+        {
+            for (int k = 0; k < CHUNK_WIDTH; k++)
+            {
+                Vec3 chunk_origin;
+                Chunk_origin(chunk, chunk_origin);
 
-    // Top edges
-    indices[8] = 4 + offset;
-    indices[9] = 5 + offset;
-    indices[10] = 5 + offset;
-    indices[11] = 6 + offset;
-    indices[12] = 6 + offset;
-    indices[13] = 7 + offset;
-    indices[14] = 7 + offset;
-    indices[15] = 4 + offset;
+                Vec3 cell_origin = {
+                    chunk_origin[0] + i,
+                    chunk_origin[1] + j,
+                    chunk_origin[2] + k
+                };
+                
+                Vec3 cell_corners[8];
+                Cube_corners(cell_origin, 1, cell_corners);
 
-    // Middle edges
-    indices[16] = 0 + offset;
-    indices[17] = 4 + offset;
-    indices[18] = 1 + offset;
-    indices[19] = 5 + offset;
-    indices[20] = 2 + offset;
-    indices[21] = 6 + offset;
-    indices[22] = 3 + offset;
-    indices[23] = 7 + offset;
+                chunk->vertex_count += MC_polygonize(cell_corners, f, isolevel,
+                        &chunk->vertices[chunk->vertex_count]);
+            }
+        }
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, chunk->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vec3) * chunk->vertex_count,
+            chunk->vertices, GL_STATIC_DRAW);
 }
 
-void Chunk_outline(const Chunk* chunk, float corners[24],
-        unsigned int offset, unsigned int indices[24])
+void Chunk_draw(const Chunk *chunk)
 {
-    Cube_corners(chunk->origin, CHUNK_WIDTH, corners);
-    Cube_outlineIndices(offset, indices);
+    glBindVertexArray(chunk->vao);
+    glDrawArrays(GL_TRIANGLES, 0, chunk->vertex_count);
 }

@@ -1,16 +1,12 @@
 #include "camera.h"
-#include "chunk.h"
 #include "chunk_manager.h"
-#include "glh/buffer.h"
 #include "glh/shader.h"
 
 #include "glad/glad.h"
 
 #include <cglm/cglm.h>
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
-#include <stdbool.h>
 #include <stdio.h>
 
 const int WIDTH = 512, HEIGHT = 512;
@@ -31,6 +27,11 @@ void Camera_update(Camera* camera)
     Camera_updateMatrix(camera);
 }
 
+float sphereSDF(const float p[3])
+{
+    return sqrtf(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]) - 25.0f;
+}
+
 int main(int argc, char** argv)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -47,6 +48,7 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
             SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -62,7 +64,7 @@ int main(int argc, char** argv)
     SDL_ShowCursor(SDL_DISABLE);
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
-    Camera camera = Camera_create(0, 0, 3, -90, 0);
+    Camera camera = Camera_create(0, 0, -3, 0, 0);
 
     gladLoadGLLoader(SDL_GL_GetProcAddress);
     
@@ -72,23 +74,11 @@ int main(int argc, char** argv)
 
     glClearColor(0.4f, 0.4f, 0.6f, 1.0f);
 
-    ChunkManager chunk_manager = ChunkManager_create(2, camera.position);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    float vertices[24 * chunk_manager.chunk_count];
-    unsigned int indices[24 * chunk_manager.chunk_count];
-    for (int i = 0; i < chunk_manager.chunk_count; i++)
-    {
-        Chunk_outline(&chunk_manager.chunks[i], &vertices[i * 24], i * 8,
-                &indices[i * 24]);
-    }
-    GLuint vertex_buffer = createVertexBuffer(24 * chunk_manager.chunk_count 
-            * sizeof(float), vertices, GL_DYNAMIC_DRAW);
-    GLuint index_buffer = createIndexBuffer(24 * chunk_manager.chunk_count
-            * sizeof(unsigned int), indices, GL_STATIC_DRAW);
-
-    int vertex[] = { 3 };
-    GLuint vertex_array = createVertexArray(vertex_buffer, index_buffer, 1,
-            vertex);
+    sphereSDF(camera.position);
+    ChunkManager chunk_manager = ChunkManager_create(camera.position, 1,
+            sphereSDF, 0.0f);
 
     Shader shader = Shader_create("shaders/basic.vs", "shaders/basic.fs");
     glUseProgram(shader.program);
@@ -123,19 +113,8 @@ int main(int argc, char** argv)
         Camera_update(&camera);
         glUniformMatrix4fv(cam_loc, 1, GL_FALSE, camera.matrix[0]);
 
-        ChunkManager_update(&chunk_manager, camera.position);
-        for (int i = 0; i < chunk_manager.chunk_count; i++)
-        {
-            Chunk_outline(&chunk_manager.chunks[i], &vertices[i * 24], i * 8,
-                    &indices[i * 24]);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, 24 * chunk_manager.chunk_count
-                * sizeof(float), vertices);
-
-        glBindVertexArray(vertex_array);
-        glDrawElements(GL_LINES, 24 * chunk_manager.chunk_count,
-                GL_UNSIGNED_INT, 0);
+        ChunkManager_recenter(&chunk_manager, camera.position);
+        ChunkManager_drawChunks(&chunk_manager);
         
         SDL_GL_SwapWindow(window);
     }
