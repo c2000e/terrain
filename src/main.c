@@ -48,7 +48,6 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
             SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -118,6 +117,8 @@ int main(int argc, char** argv)
         
         SDL_GL_SwapWindow(window);
     }
+
+    ChunkManager_free(&chunk_manager);
 
     SDL_DestroyWindow(window);
     SDL_Quit();

@@ -41,7 +41,7 @@ static void ChunkManager_createChunks(ChunkManager *cm)
     for (int i = 0; i < cm->chunk_count; i++)
     {
         Chunk_init(&cm->chunks[i], cm->offsets[i]);
-        Chunk_meshify(&cm->chunks[i], cm->f, cm->isolevel);
+        Chunk_updateMesh(&cm->chunks[i], cm->f, cm->isolevel);
     }
 }
 
@@ -58,15 +58,15 @@ static void ChunkManager_updateChunks(ChunkManager *cm)
     }
 
     // Determine which offsets are new and which chunks are old
-    IVec3 *new_ids = malloc(sizeof *new_ids * cm->chunk_count);
+    IVec3 *new_origins = malloc(sizeof *new_origins * cm->chunk_count);
     for (int i = 0; i < cm->chunk_count; i++)
     {
-        new_ids[i][0] = cm->origin[0] + cm->offsets[i][0];
-        new_ids[i][1] = cm->origin[1] + cm->offsets[i][1];
-        new_ids[i][2] = cm->origin[2] + cm->offsets[i][2];
+        new_origins[i][0] = cm->origin[0] + cm->offsets[i][0];
+        new_origins[i][1] = cm->origin[1] + cm->offsets[i][1];
+        new_origins[i][2] = cm->origin[2] + cm->offsets[i][2];
         for (int j = 0; j < cm->chunk_count; j++)
         {
-            if (IVec3_equal(new_ids[i], cm->chunks[j].id) != 0)
+            if (IVec3_equal(new_origins[i], cm->chunks[j].origin) != 0)
             {
                 is_new[i] = false;
                 is_old[j] = false;
@@ -75,7 +75,7 @@ static void ChunkManager_updateChunks(ChunkManager *cm)
         }
     }
 
-    // Set old chunks to have new ids
+    // Set old chunks to have new origins
     for (int i = 0; i < cm->chunk_count; i++)
     {
         if (is_new[i])
@@ -84,10 +84,10 @@ static void ChunkManager_updateChunks(ChunkManager *cm)
             {
                 if (is_old[j])
                 {
-                    cm->chunks[j].id[0] = new_ids[i][0];
-                    cm->chunks[j].id[1] = new_ids[i][1];
-                    cm->chunks[j].id[2] = new_ids[i][2];
-                    Chunk_meshify(&cm->chunks[j], cm->f, cm->isolevel);
+                    cm->chunks[j].origin[0] = new_origins[i][0];
+                    cm->chunks[j].origin[1] = new_origins[i][1];
+                    cm->chunks[j].origin[2] = new_origins[i][2];
+                    Chunk_updateMesh(&cm->chunks[j], cm->f, cm->isolevel);
                     is_new[i] = false;
                     is_old[j] = false;
                     break;
@@ -95,6 +95,10 @@ static void ChunkManager_updateChunks(ChunkManager *cm)
             }
         }
     }
+
+    free(new_origins);
+    free(is_old);
+    free(is_new);
 }
 
 static void ChunkManager_worldToChunk(const Vec3 src, IVec3 dst)
@@ -122,6 +126,19 @@ ChunkManager ChunkManager_create(const Vec3 target, int radius, SDF f,
     return cm;
 }
 
+void ChunkManager_free(ChunkManager *cm)
+{
+    free(cm->offsets);
+
+    for (int i = 0; i < cm->chunk_count; i++)
+    {
+        Chunk_free(&cm->chunks[i]);
+    }
+    free(cm->chunks);
+
+    cm->chunk_count = 0;
+}
+
 void ChunkManager_recenter(ChunkManager *cm, const Vec3 target)
 {
     IVec3 new_origin;
@@ -139,6 +156,6 @@ void ChunkManager_drawChunks(const ChunkManager *cm)
 {
     for (int i = 0; i < cm->chunk_count; i++)
     {
-        Chunk_draw(&cm->chunks[i]);
+        Chunk_drawMesh(&cm->chunks[i]);
     }
 }

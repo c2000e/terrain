@@ -1,32 +1,33 @@
 #include "chunk.h"
+
 #include "marching_cubes.h"
 
-void Chunk_init(Chunk *chunk, IVec3 id)
+#include <stdlib.h>
+
+void Chunk_init(Chunk *c, IVec3 origin)
 {
-    chunk->id[0] = id[0];
-    chunk->id[1] = id[1];
-    chunk->id[2] = id[2];
+    c->origin[0] = origin[0];
+    c->origin[1] = origin[1];
+    c->origin[2] = origin[2];
 
-    chunk->vertex_count = 0;
-
-    glGenVertexArrays(1, &chunk->vao);
-    glBindVertexArray(chunk->vao);
-
-    glGenBuffers(1, &chunk->vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, chunk->vbo);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
+    Mesh_init(&c->mesh);
+    Mesh_reserveVertices(&c->mesh, CHUNK_PVOLUME * 3);
+    Mesh_reserveIndices(&c->mesh, CHUNK_VOLUME * 15);
 }
 
-void Chunk_origin(const Chunk *chunk, Vec3 origin)
+void Chunk_free(Chunk *c)
 {
-    origin[0] = chunk->id[0] * CHUNK_WIDTH;
-    origin[1] = chunk->id[1] * CHUNK_WIDTH;
-    origin[2] = chunk->id[2] * CHUNK_WIDTH;
+    Mesh_free(&c->mesh);
 }
 
-static void Cube_corners(const Vec3 origin, float width, Vec3 corners[8])
+static void worldOrigin(const IVec3 chunk_origin, Vec3 world_origin)
+{
+    world_origin[0] = chunk_origin[0] * CHUNK_WIDTH;
+    world_origin[1] = chunk_origin[1] * CHUNK_WIDTH;
+    world_origin[2] = chunk_origin[2] * CHUNK_WIDTH;
+}
+
+static void cubeCorners(const Vec3 origin, float width, Vec3 corners[8])
 {
     corners[0][0] = origin[0];
     corners[0][1] = origin[1];
@@ -61,39 +62,72 @@ static void Cube_corners(const Vec3 origin, float width, Vec3 corners[8])
     corners[7][2] = origin[2] + width;
 }
 
-void Chunk_meshify(Chunk *chunk, SDF f, float isolevel)
+const static unsigned int EDGE_OFFSETS[] = {
+    0,
+    4,
+    3 * CHUNK_PWIDTH,
+    1,
+    3 * CHUNK_PWIDTH * CHUNK_PWIDTH,
+    3 * CHUNK_PWIDTH * CHUNK_PWIDTH + 4,
+    3 * CHUNK_PWIDTH * CHUNK_PWIDTH + 3 * CHUNK_PWIDTH,
+    3 * CHUNK_PWIDTH * CHUNK_PWIDTH + 1,
+    2,
+    5,
+    3 * CHUNK_PWIDTH + 5,
+    3 * CHUNK_PWIDTH + 2
+};
+
+static void Chunk_updateMeshData(Chunk *c, SDF f, float isolevel)
 {
-    chunk->vertex_count = 0;
-    for (int i = 0; i < CHUNK_WIDTH; i++)
+    c->mesh.vertex_count = 0;
+    c->mesh.index_count = 0;
+    for (int i = 0; i < CHUNK_PWIDTH; i++)
     {
-        for (int j = 0; j < CHUNK_WIDTH; j++)
+        for (int j = 0; j < CHUNK_PWIDTH; j++)
         {
-            for (int k = 0; k < CHUNK_WIDTH; k++)
+            for (int k = 0; k < CHUNK_PWIDTH; k++)
             {
-                Vec3 chunk_origin;
-                Chunk_origin(chunk, chunk_origin);
+                Vec3 mesh_origin;
+                worldOrigin(c->origin, mesh_origin);
 
                 Vec3 cell_origin = {
-                    chunk_origin[0] + i,
-                    chunk_origin[1] + j,
-                    chunk_origin[2] + k
+                    mesh_origin[0] + k,
+                    mesh_origin[1] + i,
+                    mesh_origin[2] + j
                 };
                 
                 Vec3 cell_corners[8];
-                Cube_corners(cell_origin, 1, cell_corners);
+                cubeCorners(cell_origin, 1, cell_corners);
 
-                chunk->vertex_count += MC_polygonize(cell_corners, f, isolevel,
-                        &chunk->vertices[chunk->vertex_count]);
+                int mc_index = MC_index(cell_corners, f, isolevel);
+
+                if (i < CHUNK_WIDTH && j < CHUNK_WIDTH && k < CHUNK_WIDTH)
+                {
+                    c->mesh.index_count += MC_indices(mc_index,
+                            c->mesh.vertex_count, EDGE_OFFSETS,
+                            &c->mesh.indices[c->mesh.index_count]);
+                }
+
+                c->mesh.vertex_count += MC_vertices(cell_corners, f, isolevel,
+                        mc_index, &c->mesh.vertices[c->mesh.vertex_count]);
             }
         }
     }
-    glBindBuffer(GL_ARRAY_BUFFER, chunk->vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vec3) * chunk->vertex_count,
-            chunk->vertices, GL_STATIC_DRAW);
 }
 
-void Chunk_draw(const Chunk *chunk)
+static void Chunk_updateMeshBuffers(const Chunk *c)
 {
-    glBindVertexArray(chunk->vao);
-    glDrawArrays(GL_TRIANGLES, 0, chunk->vertex_count);
+    Mesh_updateVertexBuffer(&c->mesh);
+    Mesh_updateIndexBuffer(&c->mesh);
+}
+
+void Chunk_updateMesh(Chunk *c, SDF f, float isolevel)
+{
+    Chunk_updateMeshData(c, f, isolevel);
+    Chunk_updateMeshBuffers(c);
+}
+
+void Chunk_drawMesh(const Chunk *c)
+{
+    Mesh_draw(&c->mesh);
 }

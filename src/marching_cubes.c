@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-const int EDGE_TABLE[256] = {
+const static int EDGE_TABLE[256] = {
     0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c, 0x80c, 0x905,
     0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00, 0x190, 0x99 , 0x393, 0x29a,
     0x596, 0x49f, 0x795, 0x69c, 0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93,
@@ -31,7 +31,7 @@ const int EDGE_TABLE[256] = {
     0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
 };
 
-const int TRI_TABLE[256][16] = {
+const static int TRI_TABLE[256][16] = {
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{ 0,  8,  3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{ 0,  1,  9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -304,7 +304,7 @@ int MC_index(const Vec3 corners[8], SDF f, float isolevel)
     return mc_index;
 }
 
-void MC_interpVertex(const Vec3 a, const Vec3 b, SDF f, float isolevel,
+static void MC_interpVertex(const Vec3 a, const Vec3 b, SDF f, float isolevel,
         Vec3 dst)
 {
     float fa = f(a);
@@ -330,81 +330,33 @@ void MC_interpVertex(const Vec3 a, const Vec3 b, SDF f, float isolevel,
     return;
 }
 
-void MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
-        Vec3 vertices[12])
+int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
+        Vec3 vertices[3])
 {
     if (EDGE_TABLE[mc_index] & 1)
     {
         MC_interpVertex(corners[0], corners[1], f, isolevel, vertices[0]);
     }
-    if (EDGE_TABLE[mc_index] & 2)
-    {
-        MC_interpVertex(corners[1], corners[2], f, isolevel, vertices[1]);
-    }
-    if (EDGE_TABLE[mc_index] & 4)
-    {
-        MC_interpVertex(corners[2], corners[3], f, isolevel, vertices[2]);
-    }
     if (EDGE_TABLE[mc_index] & 8)
     {
-        MC_interpVertex(corners[3], corners[0], f, isolevel, vertices[3]);
-    }
-    if (EDGE_TABLE[mc_index] & 16)
-    {
-        MC_interpVertex(corners[4], corners[5], f, isolevel, vertices[4]);
-    }
-    if (EDGE_TABLE[mc_index] & 32)
-    {
-        MC_interpVertex(corners[5], corners[6], f, isolevel, vertices[5]);
-    }
-    if (EDGE_TABLE[mc_index] & 64)
-    {
-        MC_interpVertex(corners[6], corners[7], f, isolevel, vertices[6]);
-    }
-    if (EDGE_TABLE[mc_index] & 128)
-    {
-        MC_interpVertex(corners[7], corners[4], f, isolevel, vertices[7]);
+        MC_interpVertex(corners[3], corners[0], f, isolevel, vertices[1]);
     }
     if (EDGE_TABLE[mc_index] & 256)
     {
-        MC_interpVertex(corners[0], corners[4], f, isolevel, vertices[8]);
+        MC_interpVertex(corners[0], corners[4], f, isolevel, vertices[2]);
     }
-    if (EDGE_TABLE[mc_index] & 512)
-    {
-        MC_interpVertex(corners[1], corners[5], f, isolevel, vertices[9]);
-    }
-    if (EDGE_TABLE[mc_index] & 1024)
-    {
-        MC_interpVertex(corners[2], corners[6], f, isolevel, vertices[10]);
-    }
-    if (EDGE_TABLE[mc_index] & 2048)
-    {
-        MC_interpVertex(corners[3], corners[7], f, isolevel, vertices[11]);
-    }
+    return 3;
 }
 
-int MC_triangles(const Vec3 vertices[12], SDF f, float isolevel, int mc_index,
-        Vec3* triangles)
+int MC_indices(int mc_index, unsigned int vertex_offset,
+        const unsigned int edge_offsets[12], unsigned int indices[15])
 {
-    int vertex_count = 0;
-    for (int i = 0; TRI_TABLE[mc_index][i] != -1; i++)
+    int index_count = 0;
+    while (TRI_TABLE[mc_index][index_count] != -1)
     {
-        triangles[i][0] = vertices[TRI_TABLE[mc_index][i]][0];
-        triangles[i][1] = vertices[TRI_TABLE[mc_index][i]][1];
-        triangles[i][2] = vertices[TRI_TABLE[mc_index][i]][2];
-        vertex_count++;
+        int edge_id = TRI_TABLE[mc_index][index_count];
+        indices[index_count] = vertex_offset + edge_offsets[edge_id];
+        index_count += 1;
     }
-    return vertex_count;
-}
-
-int MC_polygonize(const Vec3 corners[8], SDF f, float isolevel,
-        Vec3 triangles[15])
-{
-    int mc_index = MC_index(corners, f, isolevel);
-
-    Vec3 vertices[12];
-    MC_vertices(corners, f, isolevel, mc_index, vertices);
-
-    return MC_triangles(vertices, f, isolevel, mc_index,
-            triangles);
+    return index_count;
 }

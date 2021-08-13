@@ -13,10 +13,13 @@ typedef struct {
     unsigned int chunk_count;
     IVec3 *offsets;
     Chunk *chunks;
+
 } ChunkManager;
 
 ChunkManager ChunkManager_create(const Vec3 target, int radius, SDF f,
         float isolevel);
+
+void ChunkManager_free(ChunkManager *cm);
 
 void ChunkManager_recenter(ChunkManager *cm, const Vec3 target);
 

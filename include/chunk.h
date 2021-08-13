@@ -1,27 +1,26 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+#include "mesh.h"
 #include "sdf.h"
 
-#include <glad/glad.h>
-
 #define CHUNK_WIDTH 16
-#define CHUNK_VOLUME CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_WIDTH
+#define CHUNK_VOLUME (CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_WIDTH)
+
+#define CHUNK_PWIDTH (CHUNK_WIDTH + 1)
+#define CHUNK_PVOLUME (CHUNK_PWIDTH * CHUNK_PWIDTH * CHUNK_PWIDTH)
 
 typedef struct {
-    IVec3 id;
-    unsigned int vertex_count;
-    Vec3 vertices[CHUNK_VOLUME * 15];
-    GLuint vbo;
-    GLuint vao;
+    IVec3 origin;
+    Mesh mesh;
 } Chunk;
 
-void Chunk_init(Chunk *chunk, IVec3 id);
+void Chunk_init(Chunk *c, IVec3 origin);
 
-void Chunk_origin(const Chunk *chunk, Vec3 origin);
+void Chunk_free(Chunk *c);
 
-void Chunk_meshify(Chunk *chunk, SDF f, float isolevel);
+void Chunk_updateMesh(Chunk *c, SDF f, float isolevel);
 
-void Chunk_draw(const Chunk *chunk);
+void Chunk_drawMesh(const Chunk *c);
 
 #endif
