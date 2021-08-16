@@ -2,12 +2,12 @@
 
 layout(location = 0) in vec3 in_position;
 
-out vec4 position;
+out vec3 frag_pos;
 
 uniform mat4 camera;
 
 void main()
 {
-    position = camera * vec4(in_position, 1.0);
-    gl_Position = position;
+    frag_pos = in_position;
+    gl_Position = camera * vec4(in_position, 1.0);
 }

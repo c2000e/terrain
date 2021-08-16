@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "chunk_manager.h"
 #include "glh/shader.h"
+#include "perlin.h"
 
 #include "glad/glad.h"
 
@@ -25,6 +26,13 @@ void Camera_update(Camera* camera)
     
     Camera_updateVectors(camera);
     Camera_updateMatrix(camera);
+}
+
+float perlinSDF(const Vec3 p)
+{
+    return perlin(p[0] * 0.01f, p[1] * 0.01f, p[2] * 0.01f)
+        + 0.5f * perlin(p[0] * 0.05f, p[1] * 0.05f, p[2] * 0.05f)
+        + 0.1f * perlin(p[0] * 0.1f, p[1] * 0.1f, p[2] * 0.1f);
 }
 
 float sphereSDF(const float p[3])
@@ -70,17 +78,20 @@ int main(int argc, char** argv)
     glViewport(0, 0, WIDTH, HEIGHT);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
-    glClearColor(0.4f, 0.4f, 0.6f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    sphereSDF(camera.position);
-    ChunkManager chunk_manager = ChunkManager_create(camera.position, 1,
-            sphereSDF, 0.0f);
+    ChunkManager chunk_manager = ChunkManager_create(camera.position, 2,
+            perlinSDF, 0.0f);
 
     Shader shader = Shader_create("shaders/basic.vs", "shaders/basic.fs");
     glUseProgram(shader.program);
+
+    GLint view_pos_loc = glGetUniformLocation(shader.program, "view_pos");
+
+    GLint pointlight_pos_loc = glGetUniformLocation(shader.program,
+            "pointlight_pos");
 
     GLint cam_loc = glGetUniformLocation(shader.program, "camera");
 
@@ -111,6 +122,9 @@ int main(int argc, char** argv)
 
         Camera_update(&camera);
         glUniformMatrix4fv(cam_loc, 1, GL_FALSE, camera.matrix[0]);
+
+        glUniform3fv(view_pos_loc, 1, camera.position);
+        glUniform3fv(pointlight_pos_loc, 1, camera.position);
 
         ChunkManager_recenter(&chunk_manager, camera.position);
         ChunkManager_drawChunks(&chunk_manager);
