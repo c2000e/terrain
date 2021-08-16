@@ -81,15 +81,16 @@ static void Chunk_updateMeshData(Chunk *c, SDF f, float isolevel)
 {
     c->mesh.vertex_count = 0;
     c->mesh.index_count = 0;
+
+    Vec3 mesh_origin;
+    worldOrigin(c->origin, mesh_origin);
+
     for (int i = 0; i < CHUNK_PWIDTH; i++)
     {
         for (int j = 0; j < CHUNK_PWIDTH; j++)
         {
             for (int k = 0; k < CHUNK_PWIDTH; k++)
             {
-                Vec3 mesh_origin;
-                worldOrigin(c->origin, mesh_origin);
-
                 Vec3 cell_origin = {
                     mesh_origin[0] + k,
                     mesh_origin[1] + i,
