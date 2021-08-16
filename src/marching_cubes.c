@@ -304,8 +304,8 @@ int MC_index(const Vec3 corners[8], SDF f, float isolevel)
     return mc_index;
 }
 
-static void MC_interpVertex(const Vec3 a, const Vec3 b, SDF f, float isolevel,
-        Vec3 dst)
+static void MC_interpolateVertexPosition(const Vec3 a, const Vec3 b, SDF f,
+        float isolevel, Vec3 dst)
 {
     float fa = f(a);
     float fb = f(b);
@@ -335,15 +335,18 @@ int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
 {
     if (EDGE_TABLE[mc_index] & 1)
     {
-        MC_interpVertex(corners[0], corners[1], f, isolevel, vertices[0]);
+        MC_interpolateVertexPosition(corners[0], corners[1], f, isolevel,
+                vertices[0]);
     }
     if (EDGE_TABLE[mc_index] & 8)
     {
-        MC_interpVertex(corners[3], corners[0], f, isolevel, vertices[1]);
+        MC_interpolateVertexPosition(corners[3], corners[0], f, isolevel,
+                vertices[1]);
     }
     if (EDGE_TABLE[mc_index] & 256)
     {
-        MC_interpVertex(corners[0], corners[4], f, isolevel, vertices[2]);
+        MC_interpolateVertexPosition(corners[0], corners[4], f, isolevel,
+                vertices[2]);
     }
     return 3;
 }
