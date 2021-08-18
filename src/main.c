@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    ChunkManager chunk_manager = ChunkManager_create(camera.position, 2,
+    ChunkManager chunk_manager = ChunkManager_create(camera.position, 3,
             perlinSDF, 0.0f);
 
     Shader shader = Shader_create("shaders/basic.vs", "shaders/basic.fs");

@@ -4,20 +4,42 @@
 
 #include <stdlib.h>
 
-void Chunk_init(Chunk *c, IVec3 origin)
-{
-    c->origin[0] = origin[0];
-    c->origin[1] = origin[1];
-    c->origin[2] = origin[2];
+struct UpdateArgs {
+    Chunk *chunk;
+    SDF f;
+    float isolevel;
+};
 
-    Mesh_init(&c->mesh);
-    Mesh_reserveVertices(&c->mesh, CHUNK_PVOLUME * 3);
-    Mesh_reserveIndices(&c->mesh, CHUNK_VOLUME * 15);
+static UpdateArgs *UpdateArgs_make(Chunk *c)
+{
+    UpdateArgs *args = malloc(sizeof *args);
+    args->chunk = c;
+    args->f = NULL;
+    args->isolevel = 0.0f;
+    return args;
+}
+
+static void UpdateArgs_free(UpdateArgs *args)
+{
+    if (args)
+    {
+        free(args);
+    }
+}
+
+void Chunk_init(Chunk *c)
+{
+    Mesh_init(&c->mesh, CHUNK_PVOLUME * 3, CHUNK_VOLUME * 15);
+
+    c->update_args = UpdateArgs_make(c);
+    pthread_mutex_init(&c->mesh_mutex, NULL);
+    c->mesh_updated = false;
 }
 
 void Chunk_free(Chunk *c)
 {
     Mesh_free(&c->mesh);
+    UpdateArgs_free(c->update_args);
 }
 
 static void worldOrigin(const IVec3 chunk_origin, Vec3 world_origin)
@@ -116,19 +138,45 @@ static void Chunk_updateMeshData(Chunk *c, SDF f, float isolevel)
     }
 }
 
-static void Chunk_updateMeshBuffers(const Chunk *c)
+void Chunk_setUpdateArgs(Chunk *c, SDF f, float isolevel)
 {
-    Mesh_updateVertexBuffer(&c->mesh);
-    Mesh_updateIndexBuffer(&c->mesh);
+    c->update_args->chunk = c;
+    c->update_args->f = f;
+    c->update_args->isolevel = isolevel;
 }
 
-void Chunk_updateMesh(Chunk *c, SDF f, float isolevel)
+void Chunk_updateFunc(void *arg)
 {
-    Chunk_updateMeshData(c, f, isolevel);
-    Chunk_updateMeshBuffers(c);
+    UpdateArgs *args = (UpdateArgs*)arg;
+
+    pthread_mutex_lock(&args->chunk->mesh_mutex);
+
+    Chunk_updateMeshData(args->chunk, args->f, args->isolevel);
+
+    args->chunk->mesh_updated = true;
+
+    pthread_mutex_unlock(&args->chunk->mesh_mutex);
 }
 
-void Chunk_drawMesh(const Chunk *c)
+void Chunk_updateOrigin(Chunk *c, IVec3 origin)
 {
+    pthread_mutex_lock(&c->mesh_mutex);
+    c->origin[0] = origin[0];
+    c->origin[1] = origin[1];
+    c->origin[2] = origin[2];
+    pthread_mutex_unlock(&c->mesh_mutex);
+}
+
+void Chunk_drawMesh(Chunk *c)
+{
+    if (pthread_mutex_trylock(&c->mesh_mutex) == 0)
+    {
+        if (c->mesh_updated)
+        {
+            Mesh_swapBuffers(&c->mesh);
+            c->mesh_updated = false;
+        }
+        pthread_mutex_unlock(&c->mesh_mutex);
+    }
     Mesh_draw(&c->mesh);
 }

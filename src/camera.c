@@ -22,7 +22,7 @@ void Camera_defaultSettings(Camera* camera)
     camera->fovy = 90.0f;
     camera->aspect = 1.0f;
     camera->near = 0.1f;
-    camera->far = 100.0f;
+    camera->far = 200.0f;
     camera->speed = 0.1f;
     camera->sensitivity = 0.3f;
 }

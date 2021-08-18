@@ -2,6 +2,7 @@
 #define CHUNK_MANAGER_H
 
 #include "chunk.h"
+#include "threadpool.h"
 
 typedef struct {
     IVec3 origin;
@@ -13,6 +14,11 @@ typedef struct {
     unsigned int chunk_count;
     IVec3 *offsets;
     Chunk *chunks;
+
+    bool *is_new_offset;
+    bool *is_old_chunk;
+
+    ThreadPool *pool;
 
 } ChunkManager;
 

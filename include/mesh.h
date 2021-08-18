@@ -3,6 +3,8 @@
 
 #include "vec.h"
 
+#include "glad/glad.h"
+
 typedef struct {
     unsigned int vertex_capacity;
     unsigned int vertex_count;
@@ -12,20 +14,18 @@ typedef struct {
     unsigned int index_count;
     unsigned int *indices;
 
-    unsigned int vao;
-    unsigned int vbo;
-    unsigned int ebo;
+    unsigned int draw_index;
+    unsigned int write_index;
+    unsigned int vao[2];
+    unsigned int vbo[2];
+    unsigned int ebo[2];
 } Mesh;
 
-void Mesh_init(Mesh *m);
+void Mesh_init(Mesh *m, unsigned int vertex_count, unsigned int index_count);
 
 void Mesh_free(Mesh *m);
 
-void Mesh_reserveVertices(Mesh *m, unsigned int vertex_count);
-void Mesh_reserveIndices(Mesh *m, unsigned int index_count);
-
-void Mesh_updateVertexBuffer(const Mesh *m);
-void Mesh_updateIndexBuffer(const Mesh *m);
+void Mesh_swapBuffers(Mesh *m);
 
 void Mesh_draw(const Mesh *m);
 

@@ -19,7 +19,7 @@ void main()
     vec3 object_color = mix(vec3(1.0, 0.8, 0.6), vec3(0.7, 0.7, 0.7), slope);
 
     float d = length(pointlight_pos - frag_pos);
-    float attenuation = 1.0 / (1.0 + 0.07 * d + 0.017 * d * d);
+    float attenuation = 1.0 / (1.0 + 0.022 * d + 0.0019 * d * d);
 
     vec3 light_dir = normalize(frag_pos - pointlight_pos);
     vec3 view_dir = normalize(view_pos - frag_pos);
