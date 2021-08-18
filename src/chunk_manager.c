@@ -48,9 +48,7 @@ static void ChunkManager_createChunks(ChunkManager *cm)
             cm->origin[2] + cm->offsets[i][2]
         };
         Chunk_updateOrigin(&cm->chunks[i], chunk_origin);
-        Chunk_setUpdateArgs(&cm->chunks[i], cm->f, cm->isolevel);
-        ThreadPool_addWork(cm->pool, Chunk_updateFunc,
-                cm->chunks[i].update_args);
+        Chunk_updateMesh(&cm->chunks[i], cm->f, cm->isolevel, cm->pool);
     }
 }
 
@@ -100,9 +98,8 @@ static void ChunkManager_updateChunkMeshes(ChunkManager *cm)
                         cm->origin[2] + cm->offsets[i][2]
                     };
                     Chunk_updateOrigin(&cm->chunks[j], chunk_origin);
-                    Chunk_setUpdateArgs(&cm->chunks[j], cm->f, cm->isolevel);
-                    ThreadPool_addWork(cm->pool, Chunk_updateFunc,
-                            cm->chunks[j].update_args);
+                    Chunk_updateMesh(&cm->chunks[j], cm->f, cm->isolevel,
+                            cm->pool);
 
                     cm->is_new_offset[i] = false;
                     cm->is_old_chunk[j] = false;

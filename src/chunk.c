@@ -1,6 +1,7 @@
 #include "chunk.h"
 
 #include "marching_cubes.h"
+#include "threadpool.h"
 
 #include <stdlib.h>
 
@@ -33,7 +34,7 @@ void Chunk_init(Chunk *c)
 
     c->update_args = UpdateArgs_make(c);
     pthread_mutex_init(&c->mesh_mutex, NULL);
-    c->mesh_updated = false;
+    c->mesh_update_count = 0;
 }
 
 void Chunk_free(Chunk *c)
@@ -138,14 +139,7 @@ static void Chunk_updateMeshData(Chunk *c, SDF f, float isolevel)
     }
 }
 
-void Chunk_setUpdateArgs(Chunk *c, SDF f, float isolevel)
-{
-    c->update_args->chunk = c;
-    c->update_args->f = f;
-    c->update_args->isolevel = isolevel;
-}
-
-void Chunk_updateFunc(void *arg)
+static void Chunk_updateMeshFunc(void *arg)
 {
     UpdateArgs *args = (UpdateArgs*)arg;
 
@@ -153,9 +147,28 @@ void Chunk_updateFunc(void *arg)
 
     Chunk_updateMeshData(args->chunk, args->f, args->isolevel);
 
-    args->chunk->mesh_updated = true;
+    args->chunk->mesh_update_count -= 1;
 
     pthread_mutex_unlock(&args->chunk->mesh_mutex);
+}
+
+void Chunk_updateMesh(Chunk *c, SDF f, float isolevel, ThreadPool *pool)
+{
+    c->update_args->chunk = c;
+    c->update_args->f = f;
+    c->update_args->isolevel = isolevel;
+
+    pthread_mutex_lock(&c->mesh_mutex);
+
+    if (c->mesh_update_count == 0 && !c->mesh.buffers_mapped)
+    {
+        Mesh_mapBuffers(&c->mesh);
+    }
+    c->mesh_update_count += 1;
+
+    pthread_mutex_unlock(&c->mesh_mutex);
+
+    ThreadPool_addWork(pool, Chunk_updateMeshFunc, c->update_args);
 }
 
 void Chunk_updateOrigin(Chunk *c, IVec3 origin)
@@ -171,10 +184,9 @@ void Chunk_drawMesh(Chunk *c)
 {
     if (pthread_mutex_trylock(&c->mesh_mutex) == 0)
     {
-        if (c->mesh_updated)
+        if (c->mesh_update_count == 0 && c->mesh.buffers_mapped)
         {
-            Mesh_swapBuffers(&c->mesh);
-            c->mesh_updated = false;
+            Mesh_unmapBuffers(&c->mesh);
         }
         pthread_mutex_unlock(&c->mesh_mutex);
     }

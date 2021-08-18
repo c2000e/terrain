@@ -14,18 +14,19 @@ typedef struct {
     unsigned int index_count;
     unsigned int *indices;
 
-    unsigned int draw_index;
-    unsigned int write_index;
-    unsigned int vao[2];
-    unsigned int vbo[2];
-    unsigned int ebo[2];
+    unsigned int vao;
+    unsigned int vbo;
+    unsigned int ebo;
+
+    bool buffers_mapped;
 } Mesh;
 
 void Mesh_init(Mesh *m, unsigned int vertex_count, unsigned int index_count);
 
 void Mesh_free(Mesh *m);
 
-void Mesh_swapBuffers(Mesh *m);
+void Mesh_mapBuffers(Mesh *m);
+void Mesh_unmapBuffers(Mesh *m);
 
 void Mesh_draw(const Mesh *m);
 
