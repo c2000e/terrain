@@ -1,4 +1,4 @@
-#include "glh/shader.h"
+#include "shader.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,16 +107,35 @@ static GLuint createProgramFromFiles(const char* vertex_shader_filename,
     return program;
 }
 
-Shader Shader_create(const char* vertex_shader_filename,
-        const char* fragment_shader_filename)
-{
-    GLuint program = createProgramFromFiles(vertex_shader_filename,
-            fragment_shader_filename);
+struct Shader {
+    GLuint program;
+    const char *vert_filename;
+    const char *frag_filename;
+};
 
-    Shader shader = { program, vertex_shader_filename,
-        fragment_shader_filename };
+Shader *Shader_make(const char* vert_filename, const char* frag_filename)
+{
+    GLuint program = createProgramFromFiles(vert_filename, frag_filename);
+
+    Shader *shader = malloc(sizeof *shader);
+    shader->program = program;
+    shader->vert_filename = vert_filename;
+    shader->frag_filename = frag_filename;
 
     return shader;
+}
+
+void Shader_free(Shader *shader)
+{
+    if (shader)
+    {
+        free(shader);
+    }
+}
+
+void Shader_use(Shader *shader)
+{
+    glUseProgram(shader->program);
 }
 
 void Shader_reload(Shader* shader)
@@ -129,4 +148,16 @@ void Shader_reload(Shader* shader)
         glDeleteProgram(shader->program);
         shader->program = reloaded_program;
     }
+}
+
+void Shader_setVec3(const Shader *shader, const char *name, Vec3 v)
+{
+    GLint uniform_loc = glGetUniformLocation(shader->program, name);
+    glUniform3fv(uniform_loc, 1, v);
+}
+
+void Shader_setMat4(const Shader *shader, const char *name, Mat4 m)
+{
+    GLint uniform_loc = glGetUniformLocation(shader->program, name);
+    glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, m[0]);
 }

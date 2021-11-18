@@ -1,8 +1,8 @@
 #include "app.h"
 #include "camera.h"
 #include "chunk_manager.h"
-#include "glh/shader.h"
 #include "perlin.h"
+#include "shader.h"
 
 #include "glad/glad.h"
 
@@ -44,15 +44,8 @@ int main(int argc, char** argv)
             perlinSDF, 0.0f);
     ChunkManager_drawChunks(&chunk_manager);
 
-    Shader shader = Shader_create("shaders/basic.vs", "shaders/basic.fs");
-    glUseProgram(shader.program);
-
-    GLint view_pos_loc = glGetUniformLocation(shader.program, "view_pos");
-
-    GLint pointlight_pos_loc = glGetUniformLocation(shader.program,
-            "pointlight_pos");
-
-    GLint cam_loc = glGetUniformLocation(shader.program, "camera");
+    Shader *shader = Shader_make("shaders/basic.vs", "shaders/basic.fs");
+    Shader_use(shader);
 
     SDL_Event window_event;
     while (true)
@@ -72,9 +65,8 @@ int main(int argc, char** argv)
                     App_hideCursor(app);
                     break;
                 case SDLK_r:
-                    Shader_reload(&shader);
-                    glUseProgram(shader.program);
-                    cam_loc = glGetUniformLocation(shader.program, "camera");
+                    Shader_reload(shader);
+                    Shader_use(shader);
                     break;
             }
         }
@@ -82,10 +74,9 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         Camera_move(camera);
-        glUniformMatrix4fv(cam_loc, 1, GL_FALSE, camera->matrix[0]);
-
-        glUniform3fv(view_pos_loc, 1, camera->position);
-        glUniform3fv(pointlight_pos_loc, 1, camera->position);
+        Shader_setMat4(shader, "camera", camera->matrix);
+        Shader_setVec3(shader, "view_pos", camera->position);
+        Shader_setVec3(shader, "pointlight_pos", camera->position);
 
         ChunkManager_recenter(&chunk_manager, camera->position);
         ChunkManager_drawChunks(&chunk_manager);
