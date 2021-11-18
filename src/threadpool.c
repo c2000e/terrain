@@ -14,9 +14,7 @@ struct ThreadWork {
 
 static ThreadWork *ThreadWork_make(ThreadFunc func, void *arg)
 {
-    ThreadWork *work;
-
-    work = malloc(sizeof *work);
+    ThreadWork *work = malloc(sizeof *work);
     work->func = func;
     work->arg = arg;
     work->next = NULL;
@@ -45,8 +43,7 @@ struct ThreadPool {
 
 void ThreadPool_addWork(ThreadPool *pool, ThreadFunc func, void *arg)
 {
-    ThreadWork *work;
-    work = ThreadWork_make(func, arg);
+    ThreadWork *work = ThreadWork_make(func, arg);
 
     pthread_mutex_lock(&pool->work_mutex);
     if (pool->work_first == NULL)
@@ -66,9 +63,7 @@ void ThreadPool_addWork(ThreadPool *pool, ThreadFunc func, void *arg)
 
 static ThreadWork *ThreadPool_getWork(ThreadPool *pool)
 {
-    ThreadWork *work;
-
-    work = pool->work_first;
+    ThreadWork *work = pool->work_first;
     if (work == NULL)
     {
         return NULL;
@@ -137,16 +132,15 @@ static void *ThreadPool_worker(void *arg)
 
 ThreadPool *ThreadPool_make(unsigned int thread_count)
 {
-    ThreadPool *pool;
-    pool = malloc(sizeof *pool);
-    pool->thread_count = thread_count;
-
+    ThreadPool *pool = malloc(sizeof *pool);
+    pool->work_first = NULL;
+    pool->work_last = NULL;
     pthread_mutex_init(&pool->work_mutex, NULL);
     pthread_cond_init(&pool->work_cond, NULL);
     pthread_cond_init(&pool->active_cond, NULL);
-
-    pool->work_first = NULL;
-    pool->work_last = NULL;
+    pool->thread_count = thread_count;
+    pool->active_count = 0;
+    pool->stop = false;
     
     pthread_t thread;
     for (unsigned int i = 0; i < thread_count; i++)
