@@ -23,7 +23,8 @@ typedef struct {
     mat4 matrix;
 } Camera;
 
-Camera Camera_create(float x, float y, float z, float yaw, float pitch);
+Camera *Camera_make(float x, float y, float z, float yaw, float pitch);
+void Camera_free(Camera *camera);
 
 void Camera_defaultSettings(Camera* camera);
 
@@ -35,5 +36,7 @@ void Camera_updateVectors(Camera* camera);
 
 // Update the (projection * view) matrix of the camera.
 void Camera_updateMatrix(Camera* camera);
+
+void Camera_move(Camera *camera);
 
 #endif

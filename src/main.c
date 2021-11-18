@@ -11,24 +11,6 @@
 #include <SDL2/SDL_opengl.h>
 #include <stdio.h>
 
-const int WIDTH = 512, HEIGHT = 512;
-
-void Camera_update(Camera* camera)
-{
-    int dx, dy;
-    SDL_GetRelativeMouseState(&dx, &dy);
-    Camera_updateRotation(camera, dx, -dy);
-
-    const Uint8* kb = SDL_GetKeyboardState(NULL);
-    float x = kb[SDL_SCANCODE_D] - kb[SDL_SCANCODE_A];
-    float y = kb[SDL_SCANCODE_SPACE] - kb[SDL_SCANCODE_LSHIFT];
-    float z = kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S];
-    Camera_updatePosition(camera, x, y, z);
-    
-    Camera_updateVectors(camera);
-    Camera_updateMatrix(camera);
-}
-
 float perlinSDF(const Vec3 p)
 {
     return perlin(p[0] * 0.01f, p[1] * 0.01f, p[2] * 0.01f)
@@ -56,9 +38,9 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    Camera camera = Camera_create(0, 0, -3, 0, 0);
+    Camera *camera = Camera_make(0, 0, -3, 0, 0);
 
-    ChunkManager chunk_manager = ChunkManager_create(camera.position, 3,
+    ChunkManager chunk_manager = ChunkManager_create(camera->position, 3,
             perlinSDF, 0.0f);
     ChunkManager_drawChunks(&chunk_manager);
 
@@ -99,13 +81,13 @@ int main(int argc, char** argv)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Camera_update(&camera);
-        glUniformMatrix4fv(cam_loc, 1, GL_FALSE, camera.matrix[0]);
+        Camera_move(camera);
+        glUniformMatrix4fv(cam_loc, 1, GL_FALSE, camera->matrix[0]);
 
-        glUniform3fv(view_pos_loc, 1, camera.position);
-        glUniform3fv(pointlight_pos_loc, 1, camera.position);
+        glUniform3fv(view_pos_loc, 1, camera->position);
+        glUniform3fv(pointlight_pos_loc, 1, camera->position);
 
-        ChunkManager_recenter(&chunk_manager, camera.position);
+        ChunkManager_recenter(&chunk_manager, camera->position);
         ChunkManager_drawChunks(&chunk_manager);
         
         SDL_GL_SwapWindow(app->window);

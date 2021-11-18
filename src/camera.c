@@ -1,17 +1,27 @@
 #include "camera.h"
 
-Camera Camera_create(float x, float y, float z, float yaw, float pitch)
+#include <SDL2/SDL.h>
+
+Camera *Camera_make(float x, float y, float z, float yaw, float pitch)
 {
-    Camera camera;
-    camera.position[0] = x;
-    camera.position[1] = y;
-    camera.position[2] = z;
-    camera.yaw = yaw;
-    camera.pitch = pitch;
-    Camera_defaultSettings(&camera);
-    Camera_updateVectors(&camera);
-    Camera_updateMatrix(&camera);
+    Camera *camera = malloc(sizeof *camera);
+    camera->position[0] = x;
+    camera->position[1] = y;
+    camera->position[2] = z;
+    camera->yaw = yaw;
+    camera->pitch = pitch;
+    Camera_defaultSettings(camera);
+    Camera_updateVectors(camera);
+    Camera_updateMatrix(camera);
     return camera;
+}
+
+void Camera_free(Camera *camera)
+{
+    if (camera)
+    {
+        free(camera);
+    }
 }
 
 void Camera_defaultSettings(Camera* camera)
@@ -84,4 +94,20 @@ void Camera_updateMatrix(Camera* camera)
             camera->far, projection);
 
     glm_mat4_mul(projection, view, camera->matrix);
+}
+
+void Camera_move(Camera *camera)
+{
+    int dx, dy;
+    SDL_GetRelativeMouseState(&dx, &dy);
+    Camera_updateRotation(camera, dx, -dy);
+
+    const Uint8* kb = SDL_GetKeyboardState(NULL);
+    float x = kb[SDL_SCANCODE_D] - kb[SDL_SCANCODE_A];
+    float y = kb[SDL_SCANCODE_SPACE] - kb[SDL_SCANCODE_LSHIFT];
+    float z = kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S];
+    Camera_updatePosition(camera, x, y, z);
+    
+    Camera_updateVectors(camera);
+    Camera_updateMatrix(camera);
 }
