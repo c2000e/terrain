@@ -1,14 +1,14 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <cglm/cglm.h>
+#include "vec.h"
 
 typedef struct {
-    vec3 position;
+    Vec3 position;
     float yaw;
     float pitch;
 
-    vec3 world_up;
+    Vec3 world_up;
     float fovy;
     float aspect;
     float near;
@@ -16,11 +16,11 @@ typedef struct {
     float speed;
     float sensitivity;
 
-    vec3 front;
-    vec3 up;
-    vec3 right;
+    Vec3 front;
+    Vec3 up;
+    Vec3 right;
 
-    mat4 matrix;
+    Mat4 matrix;
 } Camera;
 
 Camera *Camera_make(float x, float y, float z, float yaw, float pitch);
@@ -37,6 +37,7 @@ void Camera_updateVectors(Camera* camera);
 // Update the (projection * view) matrix of the camera.
 void Camera_updateMatrix(Camera* camera);
 
+// Process user input to adjust camera's position and orientation
 void Camera_move(Camera *camera);
 
 #endif

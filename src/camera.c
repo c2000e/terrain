@@ -48,52 +48,52 @@ void Camera_updateRotation(Camera* camera, float dx, float dy)
 
 void Camera_updatePosition(Camera* camera, float x, float y, float z)
 {
-    vec3 movement_x;
-    glm_vec3_scale(camera->right, x, movement_x);
+    Vec3 movement_x;
+    Vec3_scale(camera->right, x, movement_x);
 
-    vec3 movement_y;
-    glm_vec3_scale(camera->up, y, movement_y);
+    Vec3 movement_y;
+    Vec3_scale(camera->up, y, movement_y);
 
-    vec3 movement_z;
-    glm_vec3_scale(camera->front, z, movement_z);
+    Vec3 movement_z;
+    Vec3_scale(camera->front, z, movement_z);
 
-    vec3 movement;
-    glm_vec3_add(movement_x, movement_y, movement);
-    glm_vec3_add(movement_z, movement, movement);
-    glm_vec3_normalize(movement);
-    glm_vec3_scale(movement, 0.1f, movement);
+    Vec3 movement;
+    Vec3_add(movement_x, movement_y, movement);
+    Vec3_add(movement_z, movement, movement);
+    Vec3_normalize(movement, movement);
+    Vec3_scale(movement, 0.1f, movement);
 
-    glm_vec3_add(camera->position, movement, camera->position);
+    Vec3_add(camera->position, movement, camera->position);
 }
 
 void Camera_updateVectors(Camera* camera)
 {
-    vec3 front;
-    front[0] = cosf(glm_rad(camera->yaw)) * cosf(glm_rad(camera->pitch));
-    front[1] = sinf(glm_rad(camera->pitch));
-    front[2] = sinf(glm_rad(camera->yaw)) * cosf(glm_rad(camera->pitch));
-    glm_vec3_normalize_to(front, camera->front);
+    Vec3 front;
+    front[0] = cosf(radians(camera->yaw)) * cosf(radians(camera->pitch));
+    front[1] = sinf(radians(camera->pitch));
+    front[2] = sinf(radians(camera->yaw)) * cosf(radians(camera->pitch));
+    Vec3_normalize(front, camera->front);
 
-    glm_vec3_cross(camera->front, camera->world_up, camera->right);
-    glm_vec3_normalize(camera->right);
+    Vec3_mul(camera->front, camera->world_up, camera->right);
+    Vec3_normalize(camera->right, camera->right);
 
-    glm_vec3_cross(camera->right, camera->front, camera->up);
-    glm_vec3_normalize(camera->up);
+    Vec3_mul(camera->right, camera->front, camera->up);
+    Vec3_normalize(camera->up, camera->up);
 }
 
 void Camera_updateMatrix(Camera* camera)
 {
-    vec3 camera_target;
-    glm_vec3_add(camera->position, camera->front, camera_target);
+    Vec3 camera_target;
+    Vec3_add(camera->position, camera->front, camera_target);
 
-    mat4 view;
-    glm_lookat(camera->position, camera_target, camera->up, view);
+    Mat4 view;
+    Mat4_lookAt(camera->position, camera_target, camera->up, view);
 
-    mat4 projection;
-    glm_perspective(glm_rad(camera->fovy), camera->aspect, camera->near,
+    Mat4 projection;
+    Mat4_perspective(radians(camera->fovy), camera->aspect, camera->near,
             camera->far, projection);
 
-    glm_mat4_mul(projection, view, camera->matrix);
+    Mat4_mul(projection, view, camera->matrix);
 }
 
 void Camera_move(Camera *camera)
@@ -107,7 +107,7 @@ void Camera_move(Camera *camera)
     float y = kb[SDL_SCANCODE_SPACE] - kb[SDL_SCANCODE_LSHIFT];
     float z = kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S];
     Camera_updatePosition(camera, x, y, z);
-    
+
     Camera_updateVectors(camera);
     Camera_updateMatrix(camera);
 }
