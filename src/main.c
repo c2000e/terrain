@@ -6,7 +6,6 @@
 
 #include "glad/glad.h"
 
-#include <cglm/cglm.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <stdio.h>
