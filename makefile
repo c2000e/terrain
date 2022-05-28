@@ -1,16 +1,21 @@
-SRC_DIR := src
+APP_SRC_DIR := src
+EXT_SRC_DIR := extern/src
 OBJ_DIR := obj
 BIN_DIR := bin
 
 EXE := $(BIN_DIR)/app
 
-SRC := $(wildcard $(SRC_DIR)/*.c)
-OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+SRC := $(wildcard $(APP_SRC_DIR)/*.c) $(wildcard $(EXT_SRC_DIR)/*.c)
+SRC := $(notdir $(SRC))
 
-CPPFLAGS := -Iinclude -MMD -MP
+OBJ := $(SRC:%.c=$(OBJ_DIR)/%.o)
+
+CPPFLAGS := -Iinclude -Iextern/include -MMD -MP
 CFLAGS   := -Wall
 LDFLAGS  := -L/usr/local/lib
 LDLIBS   := -lSDL2
+
+vpath %.c $(APP_SRC_DIR) $(EXT_SRC_DIR)
 
 .PHONY: all clean
 
@@ -19,7 +24,7 @@ all: $(EXE)
 $(EXE): $(OBJ) | $(BIN_DIR)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(BIN_DIR) $(OBJ_DIR):
