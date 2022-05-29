@@ -330,23 +330,70 @@ static void MC_interpolateVertexPosition(const Vec3 a, const Vec3 b, SDF f,
     return;
 }
 
+// Inigo Quilez trapezoidal algorithm                                       
+// These normals could be computed in vertex shader if it had access to the SDF
+static void MC_normal(const Vec3 p, SDF f, Vec3 dst)
+{
+    const float h = 0.01f;
+
+    Vec3 x1 = {  h, -h, -h };
+    Vec3 x2 = { -h, -h,  h };
+    Vec3 x3 = { -h,  h, -h };
+    Vec3 x4 = {  h,  h,  h };
+
+    Vec3 x5, x6, x7, x8;
+    Vec3_add(p, x1, x5);
+    Vec3_add(p, x2, x6);
+    Vec3_add(p, x3, x7);
+    Vec3_add(p, x4, x8);
+
+    Vec3_scale(x1, f(x5), x1);
+    Vec3_scale(x2, f(x6), x2);
+    Vec3_scale(x3, f(x7), x3);
+    Vec3_scale(x4, f(x8), x4);
+
+    Vec3_add(x1, x2, x1);
+    Vec3_add(x3, x4, x3);
+    Vec3_add(x1, x3, x1);
+
+    Vec3_normalize(x1, dst);
+}
+
 int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
-        Vec3 vertices[3])
+        Vertex vertices[3])
 {
     if (EDGE_TABLE[mc_index] & 1)
     {
-        MC_interpolateVertexPosition(corners[0], corners[1], f, isolevel,
-                vertices[0]);
+        MC_interpolateVertexPosition(
+                corners[0],
+                corners[1],
+                f,
+                isolevel,
+                vertices[0].position
+        );
+        MC_normal(vertices[0].position, f, vertices[0].normal);
     }
     if (EDGE_TABLE[mc_index] & 8)
     {
-        MC_interpolateVertexPosition(corners[3], corners[0], f, isolevel,
-                vertices[1]);
+        MC_interpolateVertexPosition(
+                corners[3],
+                corners[0],
+                f,
+                isolevel,
+                vertices[1].position
+        );
+        MC_normal(vertices[1].position, f, vertices[1].normal);
     }
     if (EDGE_TABLE[mc_index] & 256)
     {
-        MC_interpolateVertexPosition(corners[0], corners[4], f, isolevel,
-                vertices[2]);
+        MC_interpolateVertexPosition(
+                corners[0],
+                corners[4],
+                f,
+                isolevel,
+                vertices[2].position
+        );
+        MC_normal(vertices[2].position, f, vertices[2].normal);
     }
     return 3;
 }

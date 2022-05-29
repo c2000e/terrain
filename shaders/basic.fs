@@ -1,6 +1,7 @@
 #version 330 core
 
 in vec3 frag_pos;
+in vec3 frag_norm;
 
 out vec4 frag_color;
 
@@ -16,7 +17,9 @@ void main()
     vec3 normal = normalize(cross(dy, dx));
 
     float slope = (normal.y + 1.0) * 0.5;
-    vec3 object_color = mix(vec3(1.0, 0.8, 0.6), vec3(0.7, 0.7, 0.7), slope);
+
+    normal = mix(normal, -frag_norm, 1 - slope);
+    vec3 object_color = mix(vec3(0.6, 0.7, 0.5), vec3(0.5, 0.6, 0.7), slope);
 
     float d = length(pointlight_pos - frag_pos);
     float attenuation = 1.0 / (1.0 + 0.022 * d + 0.0019 * d * d);

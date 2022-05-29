@@ -6,9 +6,14 @@
 #include "glad/glad.h"
 
 typedef struct {
+    Vec3 position;
+    Vec3 normal;
+} Vertex;
+
+typedef struct {
     unsigned int vertex_capacity;
     unsigned int vertex_count;
-    Vec3 *vertices;
+    Vertex *vertices;
 
     unsigned int index_capacity;
     unsigned int index_count;
