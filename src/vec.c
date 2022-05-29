@@ -12,35 +12,35 @@ bool IVec3_equal(const IVec3 a, const IVec3 b)
     return (a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]);
 }
 
-void Vec3_scale(Vec3 src, float scale, Vec3 dst)
+void Vec3_scale(const Vec3 src, float scale, Vec3 dst)
 {
     dst[0] = src[0] * scale;
     dst[1] = src[1] * scale;
     dst[2] = src[2] * scale;
 }
 
-void Vec3_add(Vec3 src_a, Vec3 src_b, Vec3 dst)
+void Vec3_add(const Vec3 src_a, const Vec3 src_b, Vec3 dst)
 {
     dst[0] = src_a[0] + src_b[0];
     dst[1] = src_a[1] + src_b[1];
     dst[2] = src_a[2] + src_b[2];
 }
 
-void Vec3_sub(Vec3 src_a, Vec3 src_b, Vec3 dst)
+void Vec3_sub(const Vec3 src_a, const Vec3 src_b, Vec3 dst)
 {
     dst[0] = src_a[0] - src_b[0];
     dst[1] = src_a[1] - src_b[1];
     dst[2] = src_a[2] - src_b[2];
 }
 
-void Vec3_mul(Vec3 src_a, Vec3 src_b, Vec3 dst)
+void Vec3_mul(const Vec3 src_a, const Vec3 src_b, Vec3 dst)
 {
     dst[0] = src_a[1] * src_b[2] - src_a[2] * src_b[1];
     dst[1] = src_a[2] * src_b[0] - src_a[0] * src_b[2];
     dst[2] = src_a[0] * src_b[1] - src_a[1] * src_b[0];
 }
 
-void Vec3_normalize(Vec3 src, Vec3 dst)
+void Vec3_normalize(const Vec3 src, Vec3 dst)
 {
     float m = Vec3_mag(src);
     if (m > 0.0f)
@@ -51,22 +51,22 @@ void Vec3_normalize(Vec3 src, Vec3 dst)
     }
 }
 
-float Vec3_dot(Vec3 src_a, Vec3 src_b)
+float Vec3_dot(const Vec3 src_a, const Vec3 src_b)
 {
     return src_a[0] * src_b[0] + src_a[1] * src_b[1] + src_a[2] * src_b[2];
 }
 
-float Vec3_magSquared(Vec3 src)
+float Vec3_magSquared(const Vec3 src)
 {
     return Vec3_dot(src, src);
 }
 
-float Vec3_mag(Vec3 src)
+float Vec3_mag(const Vec3 src)
 {
     return sqrtf(Vec3_magSquared(src));
 }
 
-void Mat4_mul(Mat4 src_a, Mat4 src_b, Mat4 dst)
+void Mat4_mul(const Mat4 src_a, const Mat4 src_b, Mat4 dst)
 {
     // x basis
     dst[0][0] = src_a[0][0] * src_b[0][0] + src_a[1][0] * src_b[0][1] + src_a[2][0] * src_b[0][2] + src_a[3][0] * src_b[0][3];
@@ -93,7 +93,7 @@ void Mat4_mul(Mat4 src_a, Mat4 src_b, Mat4 dst)
     dst[3][3] = src_a[0][3] * src_b[3][0] + src_a[1][3] * src_b[3][1] + src_a[2][3] * src_b[3][2] + src_a[3][3] * src_b[3][3];
 }
 
-void Mat4_lookAt(Vec3 camera, Vec3 target, Vec3 up, Mat4 dst)
+void Mat4_lookAt(const Vec3 camera, const Vec3 target, const Vec3 up, Mat4 dst)
 {
     Vec3 f;
     Vec3_sub(target, camera, f);
