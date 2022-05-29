@@ -76,6 +76,7 @@ int main(int argc, char** argv)
     UserInput_init(&input, app->window);
 
     Camera *camera = Camera_make(0, 0, -3, 0, 0);
+    load(camera->position);
 
     ChunkManager chunk_manager = ChunkManager_create(
             camera->position,
