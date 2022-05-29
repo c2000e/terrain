@@ -3,6 +3,7 @@
 #include "chunk_manager.h"
 #include "input.h"
 #include "perlin.h"
+#include "save.h"
 #include "shader.h"
 
 #include "glad/glad.h"
@@ -138,11 +139,20 @@ int main(int argc, char** argv)
 
         ChunkManager_recenter(&chunk_manager, camera->position);
         ChunkManager_drawChunks(&chunk_manager, camera);
+
+        loop_count += 1;
+        if (loop_count % 100000 == 0)
+        {
+            save(camera->position);
+        }
         
         glfwSwapBuffers(app->window);
         glfwPollEvents();
     }
 
+    save(camera->position);
+
     ChunkManager_free(&chunk_manager);
     App_free(app);
 }
+
