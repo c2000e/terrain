@@ -1,6 +1,7 @@
 #ifndef CHUNK_MANAGER_H
 #define CHUNK_MANAGER_H
 
+#include "camera.h"
 #include "chunk.h"
 #include "threadpool.h"
 
@@ -29,6 +30,6 @@ void ChunkManager_free(ChunkManager *cm);
 
 void ChunkManager_recenter(ChunkManager *cm, const Vec3 target);
 
-void ChunkManager_drawChunks(const ChunkManager *cm);
+void ChunkManager_drawChunks(const ChunkManager *cm, const Camera *camera);
 
 #endif

@@ -78,11 +78,11 @@ int main(int argc, char** argv)
 
     ChunkManager chunk_manager = ChunkManager_create(
             camera->position,
-            3,
+            5,
             terrainSDF,
             0.0f
     );
-    ChunkManager_drawChunks(&chunk_manager);
+    ChunkManager_drawChunks(&chunk_manager, camera);
 
     Shader *shader = Shader_make("shaders/basic.vs", "shaders/basic.fs");
     Shader_use(shader);
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
         Shader_setVec3(shader, "pointlight_pos", camera->position);
 
         ChunkManager_recenter(&chunk_manager, camera->position);
-        ChunkManager_drawChunks(&chunk_manager);
+        ChunkManager_drawChunks(&chunk_manager, camera);
         
         glfwSwapBuffers(app->window);
         glfwPollEvents();

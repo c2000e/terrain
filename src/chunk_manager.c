@@ -124,6 +124,13 @@ static void ChunkManager_worldToChunk(const Vec3 src, IVec3 dst)
     dst[2] = (int)floorf(src[2] / CHUNK_WIDTH);
 }
 
+static void ChunkManager_chunkToWorld(const IVec3 src, Vec3 dst)
+{
+    dst[0] = src[0] * CHUNK_WIDTH;
+    dst[1] = src[1] * CHUNK_WIDTH;
+    dst[2] = src[2] * CHUNK_WIDTH;
+}
+
 ChunkManager ChunkManager_create(const Vec3 target, int radius, SDF f,
         float isolevel)
 {
@@ -178,10 +185,21 @@ void ChunkManager_recenter(ChunkManager *cm, const Vec3 target)
     }
 }
 
-void ChunkManager_drawChunks(const ChunkManager *cm)
+void ChunkManager_drawChunks(const ChunkManager *cm, const Camera *camera)
 {
     for (int i = 0; i < cm->chunk_count; i++)
     {
-        Chunk_drawMesh(&cm->chunks[i]);
+        Vec3 chunk_center;
+        ChunkManager_chunkToWorld(cm->chunks[i].origin, chunk_center);
+        chunk_center[0] += CHUNK_WIDTH / 2;
+        chunk_center[1] += CHUNK_WIDTH / 2;
+        chunk_center[2] += CHUNK_WIDTH / 2;
+
+        float chunk_radius = CHUNK_WIDTH * 0.866025f;
+
+        if (Camera_sphereInFrustum(camera, chunk_center, chunk_radius))
+        {
+            Chunk_drawMesh(&cm->chunks[i]);
+        }
     }
 }

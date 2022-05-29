@@ -36,6 +36,12 @@ void Camera_defaultSettings(Camera* camera)
     camera->far = 200.0f;
     camera->speed = 0.1f;
     camera->sensitivity = 0.3f;
+
+    camera->near_h = 2 * tan(camera->fovy / 2) * camera->near;
+    camera->near_w = camera->near_h * camera->aspect;
+
+    camera->far_h = 2 * tan(camera->fovy / 2) * camera->far;
+    camera->far_w = camera->far_h * camera->aspect;
 }
 
 void Camera_updateRotation(Camera* camera, float dx, float dy)
@@ -103,4 +109,176 @@ void Camera_move(Camera *camera, UserInput *input)
     Camera_updatePosition(camera, input->move_dx, input->move_dy, input->move_dz);
     Camera_updateVectors(camera);
     Camera_updateMatrix(camera);
+    Camera_updateFrustum(camera);
+}
+
+void Camera_updateFrustum(Camera *camera)
+{
+    // Near plane
+    camera->frustum[0].n[0] = camera->front[0];
+    camera->frustum[0].n[1] = camera->front[1];
+    camera->frustum[0].n[2] = camera->front[2];
+    Vec3_scale(
+            camera->front,
+            camera->near,
+            camera->frustum[0].p
+    );
+    Vec3_add(
+            camera->position,
+            camera->frustum[0].p,
+            camera->frustum[0].p
+    );
+
+    // Far plane
+    camera->frustum[1].n[0] = -camera->front[0];
+    camera->frustum[1].n[1] = -camera->front[1];
+    camera->frustum[1].n[2] = -camera->front[2];
+    Vec3_scale(
+            camera->front,
+            camera->far,
+            camera->frustum[1].p
+    );
+    Vec3_add(
+            camera->position,
+            camera->frustum[1].p,
+            camera->frustum[1].p
+    );
+
+    // Used to store vector in plane
+    Vec3 a;
+
+    // Top plane
+    Vec3_scale(
+            camera->up,
+            camera->near_h / 2,
+            camera->frustum[2].p
+    );
+    Vec3_add(
+            camera->frustum[0].p,
+            camera->frustum[2].p,
+            camera->frustum[2].p
+    );
+
+    Vec3_sub(
+            camera->frustum[2].p,
+            camera->position,
+            a
+    );
+
+    Vec3_mul(
+            a,
+            camera->right,
+            camera->frustum[2].n
+    );
+    Vec3_normalize(
+            camera->frustum[2].n,
+            camera->frustum[2].n
+    );
+
+    // Bottom plane
+    Vec3_scale(
+            camera->up,
+            camera->near_h / 2,
+            camera->frustum[3].p
+    );
+    Vec3_sub(
+            camera->frustum[0].p,
+            camera->frustum[3].p,
+            camera->frustum[3].p
+    );
+
+    Vec3_sub(
+            camera->frustum[3].p,
+            camera->position,
+            a
+    );
+
+    Vec3_mul(
+            camera->right,
+            a,
+            camera->frustum[3].n
+    );
+    Vec3_normalize(
+            camera->frustum[3].n,
+            camera->frustum[3].n
+    );
+
+    // Left plane
+    Vec3_scale(
+            camera->right,
+            camera->near_w / 2,
+            camera->frustum[4].p
+    );
+    Vec3_sub(
+            camera->frustum[0].p,
+            camera->frustum[4].p,
+            camera->frustum[4].p
+    );
+
+    Vec3_sub(
+            camera->frustum[4].p,
+            camera->position,
+            a
+    );
+
+    Vec3_mul(
+            a,
+            camera->up,
+            camera->frustum[4].n
+    );
+    Vec3_normalize(
+            camera->frustum[4].n,
+            camera->frustum[4].n
+    );
+
+    // Right plane
+    Vec3_scale(
+            camera->right,
+            camera->near_w / 2,
+            camera->frustum[5].p
+    );
+    Vec3_add(
+            camera->frustum[0].p,
+            camera->frustum[5].p,
+            camera->frustum[5].p
+    );
+
+    Vec3_sub(
+            camera->frustum[5].p,
+            camera->position,
+            a
+    );
+
+    Vec3_mul(
+            camera->up,
+            a,
+            camera->frustum[5].n
+    );
+    Vec3_normalize(
+            camera->frustum[5].n,
+            camera->frustum[5].n
+    );
+
+}
+
+static float planeSDF(const Plane *p, const Vec3 r)
+{
+    return Vec3_dot(p->n, r) - Vec3_dot(p->n, p->p);
+}
+
+int Camera_sphereInFrustum(const Camera *camera, Vec3 p, float r)
+{
+    for (int i = 0; i < 6; i++)
+    {
+        float distance = planeSDF(&camera->frustum[i], p);
+        if (distance < -r)
+        {
+            return 0;
+        }
+        else if (distance < r)
+        {
+            return 1;
+        }
+    }
+    return 1;
 }

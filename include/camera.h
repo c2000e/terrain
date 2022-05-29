@@ -5,6 +5,11 @@
 #include "vec.h"
 
 typedef struct {
+    Vec3 n;
+    Vec3 p;
+} Plane;
+
+typedef struct {
     Vec3 position;
     float yaw;
     float pitch;
@@ -22,6 +27,13 @@ typedef struct {
     Vec3 right;
 
     Mat4 matrix;
+
+    float near_h;
+    float near_w;
+    float far_h;
+    float far_w;
+    Plane frustum[6];
+
 } Camera;
 
 Camera *Camera_make(float x, float y, float z, float yaw, float pitch);
@@ -40,5 +52,8 @@ void Camera_updateMatrix(Camera* camera);
 
 // Process user input to adjust camera's position and orientation
 void Camera_move(Camera *camera, UserInput *input);
+
+void Camera_updateFrustum(Camera *camera);
+int Camera_sphereInFrustum(const Camera *camera, Vec3 p, float r);
 
 #endif
