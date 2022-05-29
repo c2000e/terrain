@@ -371,7 +371,7 @@ int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
                 isolevel,
                 vertices[0].position
         );
-        MC_normal(vertices[0].position, f, vertices[0].normal);
+        //MC_normal(vertices[0].position, f, vertices[0].normal);
     }
     if (EDGE_TABLE[mc_index] & 8)
     {
@@ -382,7 +382,7 @@ int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
                 isolevel,
                 vertices[1].position
         );
-        MC_normal(vertices[1].position, f, vertices[1].normal);
+        //MC_normal(vertices[1].position, f, vertices[1].normal);
     }
     if (EDGE_TABLE[mc_index] & 256)
     {
@@ -393,7 +393,7 @@ int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
                 isolevel,
                 vertices[2].position
         );
-        MC_normal(vertices[2].position, f, vertices[2].normal);
+        //MC_normal(vertices[2].position, f, vertices[2].normal);
     }
     return 3;
 }

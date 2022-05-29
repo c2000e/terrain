@@ -86,6 +86,9 @@ int main(int argc, char** argv)
 
     Shader *shader = Shader_make("shaders/basic.vs", "shaders/basic.fs");
     Shader_use(shader);
+    Shader_setInt(shader, "shade_normals", 0);
+    
+    int loop_count = 0;
 
     while (!glfwWindowShouldClose(app->window))
     {
@@ -101,7 +104,26 @@ int main(int argc, char** argv)
         {
             Shader_reload(shader);
             Shader_use(shader);
-            break;
+        }
+        if (glfwGetKey(app->window, GLFW_KEY_Z) == GLFW_PRESS)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        if (glfwGetKey(app->window, GLFW_KEY_X) == GLFW_PRESS)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        if (glfwGetKey(app->window, GLFW_KEY_N) == GLFW_PRESS)
+        {
+            Shader_setInt(shader, "shade_normals", 1);
+        }
+        if (glfwGetKey(app->window, GLFW_KEY_M) == GLFW_PRESS)
+        {
+            Shader_setInt(shader, "shade_normals", 0);
+        }
+        if (glfwGetKey(app->window, GLFW_KEY_Q) == GLFW_PRESS)
+        {
+            glfwSetWindowShouldClose(app->window, GLFW_TRUE);
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -109,6 +131,7 @@ int main(int argc, char** argv)
         UserInput_update(&input, app->window);
 
         Camera_move(camera, &input);
+        Shader_setInt(shader, "time", loop_count);
         Shader_setMat4(shader, "camera", camera->matrix);
         Shader_setVec3(shader, "view_pos", camera->position);
         Shader_setVec3(shader, "pointlight_pos", camera->position);
