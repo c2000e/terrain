@@ -1,6 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "input.h"
 #include "vec.h"
 
 typedef struct {
@@ -38,6 +39,6 @@ void Camera_updateVectors(Camera* camera);
 void Camera_updateMatrix(Camera* camera);
 
 // Process user input to adjust camera's position and orientation
-void Camera_move(Camera *camera);
+void Camera_move(Camera *camera, UserInput *input);
 
 #endif

@@ -1,89 +1,71 @@
 #include "app.h"
 
-#include "glad/glad.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <stdbool.h>
-
-static void App_createWindow(App *app, AppInfo *app_info)
+void error_callback(int error, const char* description)
 {
-    app->window = SDL_CreateWindow(
-        app_info->title,
-        100,
-        100,
-        app_info->width,
-        app_info->height,
-        SDL_WINDOW_OPENGL
-    );
-    if (app->window == NULL)
-    {
-        fprintf(stderr, "ERROR (App_createWindow): %s\n", SDL_GetError());
-        App_destroy(app);
-        exit(EXIT_FAILURE);
-    }
+    fprintf(stderr, "ERROR: %s\n", description);
 }
 
-static void App_createContext(App *app, AppInfo *app_info)
+App *App_make(const AppInfo *app_info)
 {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, app_info->gl_major_version);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, app_info->gl_minor_version);
-
-    app->context = SDL_GL_CreateContext(app->window);
-    if (app->context == NULL)
+    if (!glfwInit())
     {
-        fprintf(stderr, "ERROR (App_createContext): %s\n", SDL_GetError());
-        App_destroy(app);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "ERROR: Failed to initialize GLFW.\n");
+        return NULL;
     }
 
-    gladLoadGLLoader(SDL_GL_GetProcAddress);
-    glViewport(0, 0, app_info->width, app_info->height);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-}
+    glfwSetErrorCallback(error_callback);
 
-App *App_create(AppInfo *app_info)
-{
     App *app = malloc(sizeof *app);
+    if (!app) return NULL;
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, app_info->gl_major_version);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, app_info->gl_minor_version);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    app->window = glfwCreateWindow(
+            app_info->width,
+            app_info->height,
+            app_info->title,
+            NULL,
+            NULL
+    );
+    if (!app->window)
     {
-        fprintf(stderr, "ERROR (App_create): %s\n", SDL_GetError());
-        App_destroy(app);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "ERROR: Failed to create window.\n");
+        App_free(app);
+        return NULL;
     }
 
-    App_createWindow(app, app_info);
-    App_createContext(app, app_info);
+    glfwSetInputMode(app->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    glfwMakeContextCurrent(app->window);
+
+    if (!gladLoadGLLoader(glfwGetProcAddress))
+    {
+        fprintf(stderr, "ERROR (App_make): Failed to initialize GLAD.\n");
+        App_free(app);
+        return NULL;
+    }
+
+    int width, height;
+    glfwGetFramebufferSize(app->window, &width, &height);
+    glViewport(0, 0, width, height);
 
     return app;
 }
 
-void App_destroy(App *app)
+void App_free(App *app)
 {
-    if (app->context)
-    {
-        SDL_GL_DeleteContext(app->context);
-    }
-    if (app->window)
-    {
-        SDL_DestroyWindow(app->window);
-    }
-    SDL_Quit();
-
     if (app)
     {
         free(app);
     }
+    glfwTerminate();
 }
 
-void App_hideCursor(App *app)
-{
-    SDL_ShowCursor(SDL_DISABLE);
-    SDL_SetRelativeMouseMode(SDL_TRUE);
-}
-
-void App_showCursor(App *app)
-{
-    SDL_ShowCursor(SDL_ENABLE);
-    SDL_SetRelativeMouseMode(SDL_FALSE);
-}

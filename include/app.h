@@ -1,7 +1,8 @@
 #ifndef APP_H
 #define APP_H
 
-#include <SDL2/SDL.h>
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
 
 typedef struct {
     const char *title;
@@ -11,15 +12,15 @@ typedef struct {
     int gl_minor_version;
 } AppInfo;
 
-typedef struct {
-    SDL_Window *window;
-    SDL_GLContext context;
+typedef struct App {
+    AppInfo *app_info;
+    GLFWwindow *window;
 } App;
 
-App *App_create(AppInfo *app_info);
-void App_destroy(App *app);
+App *App_make(const AppInfo *app_info);
+void App_free(App *app);
 
-void App_hideCursor(App *app);
-void App_showCursor(App *app);
+void App_run(const App *app, void (*init_func)(void), void (*loop_func)(void));
 
 #endif
+

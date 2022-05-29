@@ -10,10 +10,12 @@ SRC := $(notdir $(SRC))
 
 OBJ := $(SRC:%.c=$(OBJ_DIR)/%.o)
 
+$(info OBJ $(OBJ))
+
 CPPFLAGS := -Iinclude -Iextern/include -MMD -MP
 CFLAGS   := -Wall
-LDFLAGS  := -L/usr/local/lib
-LDLIBS   := -lSDL2
+LDFLAGS  := -Lextern/lib
+LDLIBS   := -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit
 
 vpath %.c $(APP_SRC_DIR) $(EXT_SRC_DIR)
 

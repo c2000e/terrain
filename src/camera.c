@@ -1,6 +1,7 @@
 #include "camera.h"
 
-#include <SDL2/SDL.h>
+#include <math.h>
+#include <stdlib.h>
 
 Camera *Camera_make(float x, float y, float z, float yaw, float pitch)
 {
@@ -96,18 +97,10 @@ void Camera_updateMatrix(Camera* camera)
     Mat4_mul(projection, view, camera->matrix);
 }
 
-void Camera_move(Camera *camera)
+void Camera_move(Camera *camera, UserInput *input)
 {
-    int dx, dy;
-    SDL_GetRelativeMouseState(&dx, &dy);
-    Camera_updateRotation(camera, dx, -dy);
-
-    const Uint8* kb = SDL_GetKeyboardState(NULL);
-    float x = kb[SDL_SCANCODE_D] - kb[SDL_SCANCODE_A];
-    float y = kb[SDL_SCANCODE_SPACE] - kb[SDL_SCANCODE_LSHIFT];
-    float z = kb[SDL_SCANCODE_W] - kb[SDL_SCANCODE_S];
-    Camera_updatePosition(camera, x, y, z);
-
+    Camera_updateRotation(camera, input->rotation_dx, -input->rotation_dy);
+    Camera_updatePosition(camera, input->move_dx, input->move_dy, input->move_dz);
     Camera_updateVectors(camera);
     Camera_updateMatrix(camera);
 }

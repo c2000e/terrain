@@ -1,13 +1,14 @@
 #include "app.h"
 #include "camera.h"
 #include "chunk_manager.h"
+#include "input.h"
 #include "perlin.h"
 #include "shader.h"
 
 #include "glad/glad.h"
+#include "GLFW/glfw3.h"
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <math.h>
 #include <stdio.h>
 
 float perlinSDF(const Vec3 p)
@@ -26,53 +27,56 @@ int main(int argc, char** argv)
 {
     AppInfo app_info = {
         .title = "Marching Cubes Terrain",
-        .width = 512,
-        .height = 512,
+        .width = 1024,
+        .height = 768,
         .gl_major_version = 3,
         .gl_minor_version = 3
     };
-    App *app = App_create(&app_info);
-    App_hideCursor(app);
+    App *app = App_make(&app_info);
+    if (!app) return 1;
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    
+    UserInput input = { 0 };
+    UserInput_init(&input, app->window);
 
     Camera *camera = Camera_make(0, 0, -3, 0, 0);
 
-    ChunkManager chunk_manager = ChunkManager_create(camera->position, 3,
-            perlinSDF, 0.0f);
+    ChunkManager chunk_manager = ChunkManager_create(
+            camera->position,
+            3,
+            perlinSDF,
+            0.0f
+    );
     ChunkManager_drawChunks(&chunk_manager);
 
     Shader *shader = Shader_make("shaders/basic.vs", "shaders/basic.fs");
     Shader_use(shader);
 
-    SDL_Event window_event;
-    while (true)
+    while (!glfwWindowShouldClose(app->window))
     {
-        if (SDL_PollEvent(&window_event))
+        if (glfwGetKey(app->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
-            if (window_event.type == SDL_QUIT)
-            {
-                break;
-            }
-            switch (window_event.key.keysym.sym)
-            {
-                case SDLK_ESCAPE:
-                    App_showCursor(app);
-                    break;
-                case SDLK_RETURN:
-                    App_hideCursor(app);
-                    break;
-                case SDLK_r:
-                    Shader_reload(shader);
-                    Shader_use(shader);
-                    break;
-            }
+            glfwSetInputMode(app->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            //glfwSetWindowShouldClose(app->window, true);
+        }
+        if (glfwGetKey(app->window, GLFW_KEY_ENTER) == GLFW_PRESS)
+        {
+            glfwSetInputMode(app->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        if (glfwGetKey(app->window, GLFW_KEY_R) == GLFW_PRESS)
+        {
+            Shader_reload(shader);
+            Shader_use(shader);
+            break;
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Camera_move(camera);
+        UserInput_update(&input, app->window);
+
+        Camera_move(camera, &input);
         Shader_setMat4(shader, "camera", camera->matrix);
         Shader_setVec3(shader, "view_pos", camera->position);
         Shader_setVec3(shader, "pointlight_pos", camera->position);
@@ -80,9 +84,10 @@ int main(int argc, char** argv)
         ChunkManager_recenter(&chunk_manager, camera->position);
         ChunkManager_drawChunks(&chunk_manager);
         
-        SDL_GL_SwapWindow(app->window);
+        glfwSwapBuffers(app->window);
+        glfwPollEvents();
     }
 
     ChunkManager_free(&chunk_manager);
-    App_destroy(app);
+    App_free(app);
 }
