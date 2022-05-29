@@ -3,14 +3,18 @@ EXT_SRC_DIR := extern/src
 OBJ_DIR := obj
 BIN_DIR := bin
 
+RES_DIR := resources
+SHD_DIR := shaders
+REL_DIR := release
+
 EXE := $(BIN_DIR)/app
 
 SRC := $(wildcard $(APP_SRC_DIR)/*.c) $(wildcard $(EXT_SRC_DIR)/*.c)
 SRC := $(notdir $(SRC))
 
-OBJ := $(SRC:%.c=$(OBJ_DIR)/%.o)
+SHD := $(wildcard $(SHD_DIR)/*.vs) $(wildcard $(SHD_DIR)/*.fs)
 
-$(info OBJ $(OBJ))
+OBJ := $(SRC:%.c=$(OBJ_DIR)/%.o)
 
 CPPFLAGS := -Iinclude -Iextern/include -MMD -MP
 CFLAGS   := -Wall
@@ -31,6 +35,13 @@ $(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
 
 $(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
+
+release: $(EXE) $(SHD)
+	mkdir -p $(REL_DIR)
+	cp -r $(BIN_DIR)   $(REL_DIR)
+	cp -r $(SHD_DIR)   $(REL_DIR)
+	cp    $(RES_DIR)/* $(REL_DIR)
+	chmod +x $(REL_DIR)/run.sh
 
 clean:
 	@$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
