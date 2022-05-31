@@ -107,6 +107,7 @@ int main(int argc, char** argv)
 
         Player_move(&player, &input);
         Camera_updateMatrix(camera);
+        Camera_updateFrustum(camera);
 
         Shader_setInt(shader, "time", loop_count);
         Shader_setMat4(shader, "camera", camera->matrix);

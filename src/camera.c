@@ -9,6 +9,7 @@ Camera *Camera_make(Transform *t)
     camera->transform = t;
     Camera_defaultSettings(camera);
     Camera_updateMatrix(camera);
+    Camera_updateFrustum(camera);
     return camera;
 }
 
