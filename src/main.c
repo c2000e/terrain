@@ -5,6 +5,8 @@
 #include "perlin.h"
 #include "save.h"
 #include "shader.h"
+#include "transform.h"
+#include "player.h"
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -75,11 +77,27 @@ int main(int argc, char** argv)
     UserInput input = { 0 };
     UserInput_init(&input, app->window);
 
-    Camera *camera = Camera_make(0, 0, -3, 0, 0);
-    load(camera->position);
+    Transform player_transform;
+    Transform_init(
+            &player_transform,
+            0,                 // x
+            0,                 // y
+            -3,                // z
+            0,                 // yaw
+            0                  // pitch
+    );
+    load(&player_transform);
+
+    Player player = {
+        .speed = 0.1f,
+        .sensitivity = 0.3f,
+        .transform = &player_transform
+    };
+
+    Camera *camera = Camera_make(&player_transform);
 
     ChunkManager chunk_manager = ChunkManager_create(
-            camera->position,
+            player_transform.position,
             5,
             terrainSDF,
             0.0f
@@ -132,26 +150,28 @@ int main(int argc, char** argv)
 
         UserInput_update(&input, app->window);
 
-        Camera_move(camera, &input);
+        Player_move(&player, &input);
+        Camera_updateMatrix(camera);
+
         Shader_setInt(shader, "time", loop_count);
         Shader_setMat4(shader, "camera", camera->matrix);
-        Shader_setVec3(shader, "view_pos", camera->position);
-        Shader_setVec3(shader, "pointlight_pos", camera->position);
+        Shader_setVec3(shader, "view_pos", player_transform.position);
+        Shader_setVec3(shader, "pointlight_pos", player_transform.position);
 
-        ChunkManager_recenter(&chunk_manager, camera->position);
+        ChunkManager_recenter(&chunk_manager, player_transform.position);
         ChunkManager_drawChunks(&chunk_manager, camera);
 
         loop_count += 1;
         if (loop_count % 100000 == 0)
         {
-            save(camera->position);
+            save(&player_transform);
         }
         
         glfwSwapBuffers(app->window);
         glfwPollEvents();
     }
 
-    save(camera->position);
+    save(&player_transform);
 
     ChunkManager_free(&chunk_manager);
     App_free(app);

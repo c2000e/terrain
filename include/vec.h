@@ -11,6 +11,8 @@ bool IVec3_equal(const IVec3 a, const IVec3 b);
 
 typedef float Vec3[3];
 
+void Vec3_set(float x, float y, float z, Vec3 dst);
+
 // dst = src * scale
 void Vec3_scale(const Vec3 src, float scale, Vec3 dst);
 

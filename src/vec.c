@@ -12,6 +12,13 @@ bool IVec3_equal(const IVec3 a, const IVec3 b)
     return (a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]);
 }
 
+void Vec3_set(float x, float y, float z, Vec3 dst)
+{
+    dst[0] = x;
+    dst[1] = y;
+    dst[2] = z;
+}
+
 void Vec3_scale(const Vec3 src, float scale, Vec3 dst)
 {
     dst[0] = src[0] * scale;
