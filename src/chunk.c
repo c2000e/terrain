@@ -2,6 +2,7 @@
 
 #include "marching_cubes.h"
 #include "threadpool.h"
+#include "memory.h"
 
 #include <stdlib.h>
 
@@ -13,7 +14,7 @@ struct UpdateArgs {
 
 static UpdateArgs *UpdateArgs_make(Chunk *c)
 {
-    UpdateArgs *args = malloc(sizeof *args);
+    UpdateArgs *args = s_alloc(sizeof *args, MEMORY_TAG_JOB);
     args->chunk = c;
     args->f = NULL;
     args->isolevel = 0.0f;

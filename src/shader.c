@@ -1,8 +1,8 @@
 #include "shader.h"
 #include "logger.h"
+#include "memory.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 
 static char* stringFromFile(const char* filename)
 {
@@ -48,7 +48,7 @@ static GLuint createAndCompileShader(const char* shader_string,
     {
         GLint size;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
-        char* string = (char*)malloc(size);
+        char *string = (char *)s_alloc(size, MEMORY_TAG_RENDER);
         glGetShaderInfoLog(shader, size, &size, string);
         LOGE("Failed to compile shader: %s", string);
         glDeleteShader(shader);
@@ -73,7 +73,7 @@ static GLuint createAndLinkProgram(GLuint vertex_shader,
     {
         GLint size;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &size);
-        char* string = (char*)malloc(size);
+        char *string = (char *)s_alloc(size, MEMORY_TAG_STRING);
         glGetProgramInfoLog(program, size, &size, string);
         LOGE("Failed to link program: %s", string);
         glDeleteProgram(program);
@@ -119,7 +119,7 @@ Shader *Shader_make(const char* vert_filename, const char* frag_filename)
 
     GLuint program = createProgramFromFiles(vert_filename, frag_filename);
 
-    Shader *shader = malloc(sizeof *shader);
+    Shader *shader = s_alloc(sizeof *shader, MEMORY_TAG_RENDER);
     shader->program = program;
     shader->vert_filename = vert_filename;
     shader->frag_filename = frag_filename;
@@ -131,7 +131,7 @@ void Shader_free(Shader *shader)
 {
     if (shader)
     {
-        free(shader);
+        s_free(shader, sizeof *shader, MEMORY_TAG_RENDER);
     }
 }
 
@@ -175,3 +175,4 @@ void Shader_setMat4(const Shader *shader, const char *name, Mat4 m)
     GLint uniform_loc = glGetUniformLocation(shader->program, name);
     glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, m[0]);
 }
+

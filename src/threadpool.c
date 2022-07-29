@@ -1,5 +1,7 @@
 #include "threadpool.h"
 
+#include "memory.h"
+
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -14,7 +16,7 @@ struct ThreadWork {
 
 static ThreadWork *ThreadWork_make(ThreadFunc func, void *arg)
 {
-    ThreadWork *work = malloc(sizeof *work);
+    ThreadWork *work = s_alloc(sizeof *work, MEMORY_TAG_JOB);
     work->func = func;
     work->arg = arg;
     work->next = NULL;
@@ -26,7 +28,7 @@ static void ThreadWork_free(ThreadWork *work)
 {
     if (work)
     {
-        free(work);
+        s_free(work, sizeof *work, MEMORY_TAG_JOB);
     }
 }
 
@@ -132,7 +134,7 @@ static void *ThreadPool_worker(void *arg)
 
 ThreadPool *ThreadPool_make(unsigned int thread_count)
 {
-    ThreadPool *pool = malloc(sizeof *pool);
+    ThreadPool *pool = s_alloc(sizeof *pool, MEMORY_TAG_JOB);
     pool->work_first = NULL;
     pool->work_last = NULL;
     pthread_mutex_init(&pool->work_mutex, NULL);
