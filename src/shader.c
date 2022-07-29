@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,7 @@ static char* stringFromFile(const char* filename)
     FILE* fp = fopen(filename, "r");
     if (!fp)
     {
-        fprintf(stderr, "ERROR: Could not open file '%s'\n", filename);
+        LOGE("Failed to open file '%s'", filename);
         return NULL;
     }
 
@@ -27,8 +28,7 @@ static char* stringFromFile(const char* filename)
     }
     else
     {
-        fprintf(stderr, "ERROR: Failed to allocate string for file '%s'\n",
-                filename);
+        LOGE("Failed to allocate string for file '%s'", filename);
     }
     fclose(fp);
     return string;
@@ -50,7 +50,7 @@ static GLuint createAndCompileShader(const char* shader_string,
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
         char* string = (char*)malloc(size);
         glGetShaderInfoLog(shader, size, &size, string);
-        fprintf(stderr, "ERROR: Failed to compile shader: %s\n", string);
+        LOGE("Failed to compile shader: %s", string);
         glDeleteShader(shader);
         return 0;
     }
@@ -75,7 +75,7 @@ static GLuint createAndLinkProgram(GLuint vertex_shader,
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &size);
         char* string = (char*)malloc(size);
         glGetProgramInfoLog(program, size, &size, string);
-        fprintf(stderr, "ERROR: Failed to link program: %s\n", string);
+        LOGE("Failed to link program: %s", string);
         glDeleteProgram(program);
         return 0;
     }
@@ -115,6 +115,8 @@ struct Shader {
 
 Shader *Shader_make(const char* vert_filename, const char* frag_filename)
 {
+    LOGI("Creating shader: %s %s", vert_filename, frag_filename);
+
     GLuint program = createProgramFromFiles(vert_filename, frag_filename);
 
     Shader *shader = malloc(sizeof *shader);

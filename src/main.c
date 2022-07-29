@@ -7,15 +7,17 @@
 #include "shader.h"
 #include "transform.h"
 #include "player.h"
+#include "logger.h"
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
 #include <math.h>
-#include <stdio.h>
 
 int main(int argc, char** argv)
 {
+    LOGI("Application starting...");
+
     AppInfo app_info = {
         .title = "Marching Cubes Terrain",
         .width = 1024,
@@ -131,5 +133,7 @@ int main(int argc, char** argv)
 
     ChunkManager_free(&chunk_manager);
     App_free(app);
+
+    LOGI("Application exiting...");
 }
 

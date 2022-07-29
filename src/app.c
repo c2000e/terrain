@@ -1,18 +1,18 @@
 #include "app.h"
+#include "logger.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 void error_callback(int error, const char* description)
 {
-    fprintf(stderr, "ERROR: %s\n", description);
+    LOGE("%s", description);
 }
 
 App *App_make(const AppInfo *app_info)
 {
     if (!glfwInit())
     {
-        fprintf(stderr, "ERROR: Failed to initialize GLFW.\n");
+        LOGF("Failed to initialize GLFW.");
         return NULL;
     }
 
@@ -37,7 +37,7 @@ App *App_make(const AppInfo *app_info)
     );
     if (!app->window)
     {
-        fprintf(stderr, "ERROR: Failed to create window.\n");
+        LOGF("Failed to create window.");
         App_free(app);
         return NULL;
     }
@@ -48,7 +48,7 @@ App *App_make(const AppInfo *app_info)
 
     if (!gladLoadGLLoader(glfwGetProcAddress))
     {
-        fprintf(stderr, "ERROR (App_make): Failed to initialize GLAD.\n");
+        LOGF("Failed to initialized GLAD.");
         App_free(app);
         return NULL;
     }
