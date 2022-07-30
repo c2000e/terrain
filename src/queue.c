@@ -47,7 +47,7 @@ b8 Queue_empty(const Queue *queue)
     return queue->length == 0;
 }
 
-b8 Queue_enqueue(Queue *queue, void *value)
+b8 Queue_enqueue(Queue *queue, const void *value)
 {
     if (!queue)
     {

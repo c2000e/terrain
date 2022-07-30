@@ -47,7 +47,7 @@ b8 Queue_free(Queue *queue);
 /*
  * Add an element to the end of the queue.
  */
-b8 Queue_enqueue(Queue *queue, void *value);
+b8 Queue_enqueue(Queue *queue, const void *value);
 
 /*
  * Remove an element from the front of the queue.
