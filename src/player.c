@@ -1,6 +1,6 @@
 #include "player.h"
 
-static void Player_updateRotation(Player *player, float dx, float dy)
+static void Player_updateRotation(Player *player, f32 dx, f32 dy)
 {
     player->transform->yaw += dx * player->sensitivity;
 
@@ -15,7 +15,7 @@ static void Player_updateRotation(Player *player, float dx, float dy)
     }
 }
 
-static void Player_updatePosition(Player *player, float dx, float dy, float dz)
+static void Player_updatePosition(Player *player, f32 dx, f32 dy, f32 dz)
 {
     Vec3 movement_x;
     Vec3_scale(player->transform->right, dx, movement_x);
@@ -56,3 +56,4 @@ void Player_move(Player *player, UserInput *input)
 
     Transform_updateVectors(player->transform);
 }
+

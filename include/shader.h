@@ -1,6 +1,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include "types.h"
 #include "vec.h"
 
 #include "glad/glad.h"
@@ -14,8 +15,8 @@ void Shader_use(Shader *shader);
 
 void Shader_reload(Shader *shader);
 
-void Shader_setInt(const Shader *shader, const char *name, int i);
-void Shader_setFloat(const Shader *shader, const char *name, float f);
+void Shader_setInt(const Shader *shader, const char *name, i32 i);
+void Shader_setFloat(const Shader *shader, const char *name, f32 f);
 void Shader_setVec3(const Shader *shader, const char *name, Vec3 v);
 void Shader_setMat4(const Shader *shader, const char *name, Mat4 m);
 

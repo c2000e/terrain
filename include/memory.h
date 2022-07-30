@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdlib.h>
+#include "types.h"
 
 typedef enum memory_tag {
     MEMORY_TAG_UNKNOWN,
@@ -10,9 +10,9 @@ typedef enum memory_tag {
     MEMORY_TAG_MAX_TAGS
 } memory_tag;
 
-void *s_alloc(size_t size, memory_tag tag);
+void *s_alloc(u64 size, memory_tag tag);
 
-void s_free(void *mem, size_t size, memory_tag tag);
+void s_free(void *mem, u64 size, memory_tag tag);
 
-void s_zeroMemory(void *mem, size_t size);
+void s_zeroMemory(void *mem, u64 size);
 

@@ -3,10 +3,11 @@
 
 #include "input.h"
 #include "transform.h"
+#include "types.h"
 
 typedef struct {
-    float speed;
-    float sensitivity;
+    f32 speed;
+    f32 sensitivity;
     Transform *transform;
 } Player;
 

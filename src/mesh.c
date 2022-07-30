@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 
-void Mesh_init(Mesh *m, unsigned int vertex_count, unsigned int index_count)
+void Mesh_init(Mesh *m, u32 vertex_count, u32 index_count)
 {
     m->vertex_capacity = vertex_count;
     m->vertex_count = 0;

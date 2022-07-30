@@ -1,12 +1,13 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
+#include "types.h"
 #include "vec.h"
 
 typedef struct {
+    f32 yaw;
+    f32 pitch;
     Vec3 position;
-    float yaw;
-    float pitch;
     Vec3 forward;
     Vec3 up;
     Vec3 right;
@@ -14,11 +15,11 @@ typedef struct {
 
 void Transform_init(
         Transform *t,
-        float x,
-        float y,
-        float z,
-        float yaw,
-        float pitch
+        f32 x,
+        f32 y,
+        f32 z,
+        f32 yaw,
+        f32 pitch
 );
 
 void Transform_updateVectors(Transform *t);

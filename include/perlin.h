@@ -1,6 +1,8 @@
 #ifndef PERLIN_H
 #define PERLIN_H
 
-float perlin(float x, float y, float z);
+#include "types.h"
+
+f32 perlin(f32 x, f32 y, f32 z);
 
 #endif

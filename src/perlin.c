@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-const static int p[512] = {
+const static u16 p[512] = {
     151, 160, 137,  91,  90,  15, 131,  13, 201,  95,  96,  53, 194, 233,   7,
     225, 140,  36, 103,  30,  69, 142,   8,  99,  37, 240,  21,  10,  23, 190,
       6, 148, 247, 120, 234,  75,   0,  26, 197,  62,  94, 252, 219, 203, 117,
@@ -41,17 +41,17 @@ const static int p[512] = {
     180
 };
 
-static float fade(float t)
+static f32 fade(f32 t)
 {
     return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
-static float lerp(float t, float a, float b)
+static f32 lerp(f32 t, f32 a, f32 b)
 {
     return a + t * (b - a);
 }
 
-const static float g[16][3] = {
+const static f32 g[16][3] = {
     {  1,  1,  0 },
     { -1,  1,  0 },
     {  1, -1,  0 },
@@ -70,34 +70,34 @@ const static float g[16][3] = {
     {  0, -1, -1 }
 };
 
-static float grad(int hash, float x, float y, float z)
+static f32 grad(u16 hash, f32 x, f32 y, f32 z)
 {
-    int h = hash & 15;
+    u16 h = hash & 15;
     return g[h][0] * x + g[h][1] * y + g[h][2] * z;
 }
 
-float perlin(float x, float y, float z)
+f32 perlin(f32 x, f32 y, f32 z)
 {
-    int X = (int)floorf(x) & 255;
-    int Y = (int)floorf(y) & 255;
-    int Z = (int)floorf(z) & 255;
+    i32 X = (i32)floorf(x) & 255;
+    i32 Y = (i32)floorf(y) & 255;
+    i32 Z = (i32)floorf(z) & 255;
 
     x -= floorf(x);
     y -= floorf(y);
     z -= floorf(z);
     
-    float u = fade(x);
-    float v = fade(y);
-    float w = fade(z);
+    f32 u = fade(x);
+    f32 v = fade(y);
+    f32 w = fade(z);
     
-    int a = p[p[p[X    ] + Y    ] + Z];
-    int b = p[p[p[X + 1] + Y    ] + Z];
-    int c = p[p[p[X    ] + Y + 1] + Z];
-    int d = p[p[p[X + 1] + Y + 1] + Z];
-    int e = p[p[p[X    ] + Y    ] + Z + 1];
-    int f = p[p[p[X + 1] + Y    ] + Z + 1];
-    int g = p[p[p[X    ] + Y + 1] + Z + 1];
-    int h = p[p[p[X + 1] + Y + 1] + Z + 1];
+    i32 a = p[p[p[X    ] + Y    ] + Z];
+    i32 b = p[p[p[X + 1] + Y    ] + Z];
+    i32 c = p[p[p[X    ] + Y + 1] + Z];
+    i32 d = p[p[p[X + 1] + Y + 1] + Z];
+    i32 e = p[p[p[X    ] + Y    ] + Z + 1];
+    i32 f = p[p[p[X + 1] + Y    ] + Z + 1];
+    i32 g = p[p[p[X    ] + Y + 1] + Z + 1];
+    i32 h = p[p[p[X + 1] + Y + 1] + Z + 1];
 
     return lerp(w, lerp(v, lerp(u, grad(a, x    , y    , z    ),
                                    grad(b, x - 1, y    , z    )),

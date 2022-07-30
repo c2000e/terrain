@@ -9,7 +9,7 @@
 struct UpdateArgs {
     Chunk *chunk;
     SDF f;
-    float isolevel;
+    f32 isolevel;
 };
 
 static UpdateArgs *UpdateArgs_make(Chunk *c)
@@ -51,7 +51,7 @@ static void worldOrigin(const IVec3 chunk_origin, Vec3 world_origin)
     world_origin[2] = chunk_origin[2] * CHUNK_WIDTH;
 }
 
-static void cubeCorners(const Vec3 origin, float width, Vec3 corners[8])
+static void cubeCorners(const Vec3 origin, f32 width, Vec3 corners[8])
 {
     corners[0][0] = origin[0];
     corners[0][1] = origin[1];
@@ -86,7 +86,7 @@ static void cubeCorners(const Vec3 origin, float width, Vec3 corners[8])
     corners[7][2] = origin[2] + width;
 }
 
-const static unsigned int EDGE_OFFSETS[] = {
+const static u32 EDGE_OFFSETS[] = {
     0,
     4,
     3 * CHUNK_PWIDTH,
@@ -101,7 +101,7 @@ const static unsigned int EDGE_OFFSETS[] = {
     3 * CHUNK_PWIDTH + 2
 };
 
-static void Chunk_updateMeshData(Chunk *c, SDF f, float isolevel)
+static void Chunk_updateMeshData(Chunk *c, SDF f, f32 isolevel)
 {
     c->mesh.vertex_count = 0;
     c->mesh.index_count = 0;
@@ -109,11 +109,11 @@ static void Chunk_updateMeshData(Chunk *c, SDF f, float isolevel)
     Vec3 mesh_origin;
     worldOrigin(c->origin, mesh_origin);
 
-    for (int i = 0; i < CHUNK_PWIDTH; i++)
+    for (u32 i = 0; i < CHUNK_PWIDTH; i++)
     {
-        for (int j = 0; j < CHUNK_PWIDTH; j++)
+        for (u32 j = 0; j < CHUNK_PWIDTH; j++)
         {
-            for (int k = 0; k < CHUNK_PWIDTH; k++)
+            for (u32 k = 0; k < CHUNK_PWIDTH; k++)
             {
                 Vec3 cell_origin = {
                     mesh_origin[0] + k,
@@ -124,7 +124,7 @@ static void Chunk_updateMeshData(Chunk *c, SDF f, float isolevel)
                 Vec3 cell_corners[8];
                 cubeCorners(cell_origin, 1, cell_corners);
 
-                int mc_index = MC_index(cell_corners, f, isolevel);
+                u32 mc_index = MC_index(cell_corners, f, isolevel);
 
                 if (i < CHUNK_WIDTH && j < CHUNK_WIDTH && k < CHUNK_WIDTH)
                 {
@@ -153,7 +153,7 @@ static void Chunk_updateMeshFunc(void *arg)
     pthread_mutex_unlock(&args->chunk->mesh_mutex);
 }
 
-void Chunk_updateMesh(Chunk *c, SDF f, float isolevel, ThreadPool *pool)
+void Chunk_updateMesh(Chunk *c, SDF f, f32 isolevel, ThreadPool *pool)
 {
     c->update_args->chunk = c;
     c->update_args->f = f;

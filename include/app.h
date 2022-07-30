@@ -1,15 +1,17 @@
 #ifndef APP_H
 #define APP_H
 
+#include "types.h"
+
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
 typedef struct {
     const char *title;
-    int width;
-    int height;
-    int gl_major_version;
-    int gl_minor_version;
+    u16 width;
+    u16 height;
+    u8 gl_major_version;
+    u8 gl_minor_version;
 } AppInfo;
 
 typedef struct App {

@@ -2,8 +2,9 @@
 #define SAVE_H
 
 #include "transform.h"
+#include "types.h"
 
-int save(const Transform *t);
-int load(Transform *t);
+b8 save(const Transform *t);
+b8 load(Transform *t);
 
 #endif

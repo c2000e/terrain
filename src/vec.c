@@ -2,24 +2,24 @@
 
 #include <math.h>
 
-float radians(float degrees)
+f32 radians(f32 degrees)
 {
     return degrees * (M_PI / 180.0f);
 }
 
-bool IVec3_equal(const IVec3 a, const IVec3 b)
+b8 IVec3_equal(const IVec3 a, const IVec3 b)
 {
     return (a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]);
 }
 
-void Vec3_set(float x, float y, float z, Vec3 dst)
+void Vec3_set(f32 x, f32 y, f32 z, Vec3 dst)
 {
     dst[0] = x;
     dst[1] = y;
     dst[2] = z;
 }
 
-void Vec3_scale(const Vec3 src, float scale, Vec3 dst)
+void Vec3_scale(const Vec3 src, f32 scale, Vec3 dst)
 {
     dst[0] = src[0] * scale;
     dst[1] = src[1] * scale;
@@ -49,7 +49,7 @@ void Vec3_mul(const Vec3 src_a, const Vec3 src_b, Vec3 dst)
 
 void Vec3_normalize(const Vec3 src, Vec3 dst)
 {
-    float m = Vec3_mag(src);
+    f32 m = Vec3_mag(src);
     if (m > 0.0f)
     {
         dst[0] = src[0] / m;
@@ -58,17 +58,17 @@ void Vec3_normalize(const Vec3 src, Vec3 dst)
     }
 }
 
-float Vec3_dot(const Vec3 src_a, const Vec3 src_b)
+f32 Vec3_dot(const Vec3 src_a, const Vec3 src_b)
 {
     return src_a[0] * src_b[0] + src_a[1] * src_b[1] + src_a[2] * src_b[2];
 }
 
-float Vec3_magSquared(const Vec3 src)
+f32 Vec3_magSquared(const Vec3 src)
 {
     return Vec3_dot(src, src);
 }
 
-float Vec3_mag(const Vec3 src)
+f32 Vec3_mag(const Vec3 src)
 {
     return sqrtf(Vec3_magSquared(src));
 }
@@ -139,9 +139,9 @@ void Mat4_lookAt(const Vec3 camera, const Vec3 target, const Vec3 up, Mat4 dst)
     dst[3][3] = 1.0f;
 }
 
-void Mat4_perspective(float fov, float aspect, float near, float far, Mat4 dst)
+void Mat4_perspective(f32 fov, f32 aspect, f32 near, f32 far, Mat4 dst)
 {
-    float tan_half_fov = tanf(fov * 0.5f);
+    f32 tan_half_fov = tanf(fov * 0.5f);
 
     // x basis
     dst[0][0] = 1.0f / (aspect * tan_half_fov);
@@ -167,3 +167,4 @@ void Mat4_perspective(float fov, float aspect, float near, float far, Mat4 dst)
     dst[3][2] = -(2 * far * near) / (far - near);
     dst[3][3] = 0.0f;
 }
+

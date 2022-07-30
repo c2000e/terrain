@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "sdf.h"
 #include "threadpool.h"
+#include "types.h"
 
 #include <pthread.h>
 
@@ -21,14 +22,14 @@ typedef struct {
 
     UpdateArgs *update_args;
     pthread_mutex_t mesh_mutex;
-    int mesh_update_count;
+    u32 mesh_update_count;
 } Chunk;
 
 void Chunk_init(Chunk *c);
 void Chunk_free(Chunk *c);
 
 void Chunk_updateOrigin(Chunk *c, IVec3 origin);
-void Chunk_updateMesh(Chunk *c, SDF f, float isolevel, ThreadPool *pool);
+void Chunk_updateMesh(Chunk *c, SDF f, f32 isolevel, ThreadPool *pool);
 
 void Chunk_drawMesh(Chunk *c);
 

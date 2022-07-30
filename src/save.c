@@ -2,23 +2,23 @@
 
 #include <stdio.h>                                                             
 
-int save(const Transform *t)
+b8 save(const Transform *t)
 {
     FILE *fp;
     fp = fopen("savedata", "w");
-    if (!fp) return -1;
+    if (!fp) return false;
     fwrite(t, 1, sizeof(Transform), fp);
     fclose(fp);
-    return 0;
+    return true;
 }
 
-int load(Transform *t)
+b8 load(Transform *t)
 {
     FILE *fp;
     fp = fopen("savedata", "r");
-    if (!fp) return -1;
+    if (!fp) return false;
     fread(t, sizeof(Transform), 1, fp);
     fclose(fp);
-    return 0;
+    return true;
 }
 

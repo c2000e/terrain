@@ -152,13 +152,13 @@ void Shader_reload(Shader* shader)
     }
 }
 
-void Shader_setInt(const Shader *shader, const char *name, int i)
+void Shader_setInt(const Shader *shader, const char *name, i32 i)
 {
     GLint uniform_loc = glGetUniformLocation(shader->program, name);
     glUniform1i(uniform_loc, i);
 }
 
-void Shader_setFloat(const Shader *shader, const char *name, float f)
+void Shader_setFloat(const Shader *shader, const char *name, f32 f)
 {
     GLint uniform_loc = glGetUniformLocation(shader->program, name);
     glUniform1f(uniform_loc, f);

@@ -3,18 +3,23 @@
 
 #include "mesh.h"
 #include "sdf.h"
+#include "types.h"
 
-int MC_index(const Vec3 corners[8], SDF f, float isolevel);
+u32 MC_index(const Vec3 corners[8], SDF f, f32 isolevel);
 
-int MC_vertices(
+u32 MC_vertices(
         const Vec3 corners[8],
         SDF f,
-        float isolevel,
-        int mc_index,
+        f32 isolevel,
+        u32 mc_index,
         Vertex vertices[3]
 );
 
-int MC_indices(int mc_index, unsigned int vertex_offset,
-        const unsigned int edge_offsets[12], unsigned int indices[15]);
+u32 MC_indices(
+        u32 mc_index,
+        u32 vertex_offset,
+        const u32 edge_offsets[12],
+        u32 indices[15]
+);
 
 #endif

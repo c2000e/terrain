@@ -53,7 +53,7 @@ App *App_make(const AppInfo *app_info)
         return NULL;
     }
 
-    int width, height;
+    i32 width, height;
     glfwGetFramebufferSize(app->window, &width, &height);
     glViewport(0, 0, width, height);
 

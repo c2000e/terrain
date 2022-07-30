@@ -4,6 +4,7 @@
 #include "input.h"
 #include "vec.h"
 #include "transform.h"
+#include "types.h"
 
 typedef struct {
     Vec3 n;
@@ -13,17 +14,17 @@ typedef struct {
 typedef struct {
     Transform *transform;
 
-    float fovy;
-    float aspect;
-    float near;
-    float far;
+    f32 fovy;
+    f32 aspect;
+    f32 near;
+    f32 far;
 
     Mat4 matrix;
 
-    float near_h;
-    float near_w;
-    float far_h;
-    float far_w;
+    f32 near_h;
+    f32 near_w;
+    f32 far_h;
+    f32 far_w;
     Plane frustum[6];
 
 } Camera;
@@ -37,6 +38,6 @@ void Camera_defaultSettings(Camera* camera);
 void Camera_updateMatrix(Camera* camera);
 
 void Camera_updateFrustum(Camera *camera);
-int Camera_sphereInFrustum(const Camera *camera, Vec3 p, float r);
+b8 Camera_sphereInFrustum(const Camera *camera, Vec3 p, f32 r);
 
 #endif

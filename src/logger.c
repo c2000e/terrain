@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "types.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -21,7 +22,7 @@ void log_msg(log_level level, const char *message, ...)
         "[FATAL]: ",
     };
     const char *prefix = level_strings[level];
-    int prefix_length = strlen(prefix);
+    u32 prefix_length = strlen(prefix);
     strncpy(log_msg, prefix, prefix_length);
 
     // Append message

@@ -213,24 +213,25 @@ void Camera_updateFrustum(Camera *camera)
 
 }
 
-static float planeSDF(const Plane *p, const Vec3 r)
+static f32 planeSDF(const Plane *p, const Vec3 r)
 {
     return Vec3_dot(p->n, r) - Vec3_dot(p->n, p->p);
 }
 
-int Camera_sphereInFrustum(const Camera *camera, Vec3 p, float r)
+b8 Camera_sphereInFrustum(const Camera *camera, Vec3 p, f32 r)
 {
-    for (int i = 0; i < 6; i++)
+    for (i32 i = 0; i < 6; i++)
     {
-        float distance = planeSDF(&camera->frustum[i], p);
+        f32 distance = planeSDF(&camera->frustum[i], p);
         if (distance < -r)
         {
-            return 0;
+            return false;
         }
         else if (distance < r)
         {
-            return 1;
+            return true;
         }
     }
-    return 1;
+    return true;
 }
+

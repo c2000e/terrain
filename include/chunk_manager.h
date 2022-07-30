@@ -4,27 +4,32 @@
 #include "camera.h"
 #include "chunk.h"
 #include "threadpool.h"
+#include "types.h"
 
 typedef struct {
     IVec3 origin;
-    int radius;
+    i32 radius;
 
     SDF f;
-    float isolevel;
+    f32 isolevel;
 
-    unsigned int chunk_count;
+    u32 chunk_count;
     IVec3 *offsets;
     Chunk *chunks;
 
-    bool *is_new_offset;
-    bool *is_old_chunk;
+    b8 *is_new_offset;
+    b8 *is_old_chunk;
 
     ThreadPool *pool;
 
 } ChunkManager;
 
-ChunkManager ChunkManager_create(const Vec3 target, int radius, SDF f,
-        float isolevel);
+ChunkManager ChunkManager_create(
+        const Vec3 target,
+        i32 radius,
+        SDF f,
+        f32 isolevel
+);
 
 void ChunkManager_free(ChunkManager *cm);
 

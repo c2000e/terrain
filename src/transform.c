@@ -6,11 +6,11 @@ const Vec3 WORLD_UP = { 0, 1, 0 };
 
 void Transform_init(
         Transform *t,
-        float x,
-        float y,
-        float z,
-        float yaw,
-        float pitch
+        f32 x,
+        f32 y,
+        f32 z,
+        f32 yaw,
+        f32 pitch
 )
 {
     t->yaw = yaw;

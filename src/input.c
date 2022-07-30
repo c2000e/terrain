@@ -2,7 +2,7 @@
 
 void UserInput_init(UserInput *input, GLFWwindow *window)
 {
-    double mx, my;
+    f64 mx, my;
     glfwGetCursorPos(window, &mx, &my);
     input->rotation_dx = 0.0f;
     input->mouse_x = mx;
@@ -16,7 +16,7 @@ void UserInput_init(UserInput *input, GLFWwindow *window)
 
 void UserInput_update(UserInput *input, GLFWwindow *window)
 {
-    double mx, my;
+    f64 mx, my;
     glfwGetCursorPos(window, &mx, &my);
     input->rotation_dx = mx - input->mouse_x;
     input->mouse_x = mx;

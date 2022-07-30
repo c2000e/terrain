@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-const static int EDGE_TABLE[256] = {
+const static u32 EDGE_TABLE[256] = {
     0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c, 0x80c, 0x905,
     0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00, 0x190, 0x99 , 0x393, 0x29a,
     0x596, 0x49f, 0x795, 0x69c, 0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93,
@@ -31,7 +31,7 @@ const static int EDGE_TABLE[256] = {
     0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
 };
 
-const static int TRI_TABLE[256][16] = {
+const static i32 TRI_TABLE[256][16] = {
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{ 0,  8,  3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{ 0,  1,  9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -290,9 +290,9 @@ const static int TRI_TABLE[256][16] = {
 	{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
 };
 
-int MC_index(const Vec3 corners[8], SDF f, float isolevel)
+u32 MC_index(const Vec3 corners[8], SDF f, f32 isolevel)
 {
-    int mc_index = 0;
+    u32 mc_index = 0;
     if (f(corners[0]) < isolevel) mc_index |= 1;
     if (f(corners[1]) < isolevel) mc_index |= 2;
     if (f(corners[2]) < isolevel) mc_index |= 4;
@@ -304,11 +304,16 @@ int MC_index(const Vec3 corners[8], SDF f, float isolevel)
     return mc_index;
 }
 
-static void MC_interpolateVertexPosition(const Vec3 a, const Vec3 b, SDF f,
-        float isolevel, Vec3 dst)
+static void MC_interpolateVertexPosition(
+        const Vec3 a,
+        const Vec3 b,
+        SDF f,
+        f32 isolevel,
+        Vec3 dst
+)
 {
-    float fa = f(a);
-    float fb = f(b);
+    f32 fa = f(a);
+    f32 fb = f(b);
     if (fabsf(isolevel - fa) < 0.0001f || fabsf(fa - fb) < 0.0001f)
     {
         dst[0] = a[0];
@@ -323,7 +328,7 @@ static void MC_interpolateVertexPosition(const Vec3 a, const Vec3 b, SDF f,
         dst[2] = b[2];
         return;
     }
-    float t = (isolevel - fa) / (fb - fa);
+    f32 t = (isolevel - fa) / (fb - fa);
     dst[0] = a[0] + t * (b[0] - a[0]);
     dst[1] = a[1] + t * (b[1] - a[1]);
     dst[2] = a[2] + t * (b[2] - a[2]);
@@ -334,7 +339,7 @@ static void MC_interpolateVertexPosition(const Vec3 a, const Vec3 b, SDF f,
 // These normals could be computed in vertex shader if it had access to the SDF
 static void MC_normal(const Vec3 p, SDF f, Vec3 dst)
 {
-    const float h = 0.01f;
+    const f32 h = 0.01f;
 
     Vec3 x1 = {  h, -h, -h };
     Vec3 x2 = { -h, -h,  h };
@@ -359,8 +364,13 @@ static void MC_normal(const Vec3 p, SDF f, Vec3 dst)
     Vec3_normalize(x1, dst);
 }
 
-int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
-        Vertex vertices[3])
+u32 MC_vertices(
+        const Vec3 corners[8],
+        SDF f,
+        f32 isolevel,
+        u32 mc_index,
+        Vertex vertices[3]
+)
 {
     if (EDGE_TABLE[mc_index] & 1)
     {
@@ -398,13 +408,16 @@ int MC_vertices(const Vec3 corners[8], SDF f, float isolevel, int mc_index,
     return 3;
 }
 
-int MC_indices(int mc_index, unsigned int vertex_offset,
-        const unsigned int edge_offsets[12], unsigned int indices[15])
+u32 MC_indices(
+        u32 mc_index,
+        u32 vertex_offset,
+        const u32 edge_offsets[12],
+        u32 indices[15])
 {
-    int index_count = 0;
+    u32 index_count = 0;
     while (TRI_TABLE[mc_index][index_count] != -1)
     {
-        int edge_id = TRI_TABLE[mc_index][index_count];
+        u32 edge_id = TRI_TABLE[mc_index][index_count];
         indices[index_count] = vertex_offset + edge_offsets[edge_id];
         index_count += 1;
     }

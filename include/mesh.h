@@ -1,6 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "types.h"
 #include "vec.h"
 
 #include "glad/glad.h"
@@ -11,22 +12,22 @@ typedef struct {
 } Vertex;
 
 typedef struct {
-    unsigned int vertex_capacity;
-    unsigned int vertex_count;
+    u32 vertex_capacity;
+    u32 vertex_count;
     Vertex *vertices;
 
-    unsigned int index_capacity;
-    unsigned int index_count;
-    unsigned int *indices;
+    u32 index_capacity;
+    u32 index_count;
+    u32 *indices;
 
-    unsigned int vao;
-    unsigned int vbo;
-    unsigned int ebo;
+    u32 vao;
+    u32 vbo;
+    u32 ebo;
 
-    bool buffers_mapped;
+    b8 buffers_mapped;
 } Mesh;
 
-void Mesh_init(Mesh *m, unsigned int vertex_count, unsigned int index_count);
+void Mesh_init(Mesh *m, u32 vertex_count, u32 index_count);
 
 void Mesh_free(Mesh *m);
 

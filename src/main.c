@@ -8,6 +8,7 @@
 #include "transform.h"
 #include "player.h"
 #include "logger.h"
+#include "types.h"
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -65,7 +66,7 @@ int main(int argc, char** argv)
     Shader_use(shader);
     Shader_setInt(shader, "shade_normals", 0);
     
-    int loop_count = 0;
+    i32 loop_count = 0;
 
     while (!glfwWindowShouldClose(app->window))
     {
