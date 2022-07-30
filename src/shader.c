@@ -20,7 +20,7 @@ static char* stringFromFile(const char* filename)
     rewind(fp);
 
     // Read file to string.
-    char* string = (char*)malloc(size + 1);
+    char *string = (char *)s_alloc(size + 1, MEMORY_TAG_STRING);
     if (string)
     {
         fread(string, 1, size, fp);
@@ -48,7 +48,7 @@ static GLuint createAndCompileShader(const char* shader_string,
     {
         GLint size;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
-        char *string = (char *)s_alloc(size, MEMORY_TAG_RENDER);
+        char *string = (char *)s_alloc(size, MEMORY_TAG_STRING);
         glGetShaderInfoLog(shader, size, &size, string);
         LOGE("Failed to compile shader: %s", string);
         glDeleteShader(shader);
