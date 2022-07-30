@@ -15,4 +15,5 @@ void *s_alloc(u64 size, memory_tag tag);
 void s_free(void *mem, u64 size, memory_tag tag);
 
 void s_zeroMemory(void *mem, u64 size);
+void s_copyMemory(void *dst, void *src, u64 size);
 

@@ -46,3 +46,8 @@ void s_zeroMemory(void *mem, u64 size)
     memset(mem, 0, size);
 }
 
+void s_copyMemory(void *dst, void *src, u64 size)
+{
+    memcpy(dst, src, size);
+}
+
