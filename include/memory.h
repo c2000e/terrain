@@ -7,6 +7,7 @@ typedef enum memory_tag {
     MEMORY_TAG_RENDER,
     MEMORY_TAG_STRING,
     MEMORY_TAG_JOB,
+    MEMORY_TAG_QUEUE,
     MEMORY_TAG_MAX_TAGS
 } memory_tag;
 
