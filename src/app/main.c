@@ -1,14 +1,14 @@
-#include "app.h"
-#include "camera.h"
-#include "chunk_manager.h"
-#include "input.h"
-#include "perlin.h"
-#include "save.h"
-#include "shader.h"
-#include "transform.h"
-#include "player.h"
-#include "logger.h"
-#include "types.h"
+#include "engine/app.h"
+#include "engine/camera.h"
+#include "engine/chunk_manager.h"
+#include "engine/input.h"
+#include "engine/perlin.h"
+#include "engine/save.h"
+#include "engine/shader.h"
+#include "engine/transform.h"
+#include "engine/player.h"
+#include "engine/logger.h"
+#include "engine/types.h"
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -133,6 +133,7 @@ int main(int argc, char** argv)
     save(&player_transform);
 
     ChunkManager_free(&chunk_manager);
+    
     App_free(app);
 
     LOGI("Application exiting...");

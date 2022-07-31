@@ -1,39 +1,53 @@
-APP_SRC_DIR := src
-EXT_SRC_DIR := extern/src
+
+SRC_DIR := src
+INC_DIR := include
 OBJ_DIR := obj
+LIB_DIR := lib
 BIN_DIR := bin
+
+ENGINE_SRC_DIR := $(SRC_DIR)/engine
+ENGINE_INC_DIR := $(INC_DIR)/engine
+ENGINE_OBJ_DIR := $(OBJ_DIR)/engine
+
+ENGINE_SRC := $(wildcard $(ENGINE_SRC_DIR)/*.c)
+ENGINE_OBJ := $(ENGINE_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+ENGINE_LIB := $(BIN_DIR)/libengine.a
+
+APP_SRC_DIR := $(SRC_DIR)/app
+APP_OBJ_DIR := $(OBJ_DIR)/app
+
+APP_SRC := $(wildcard $(APP_SRC_DIR)/*.c)
+APP_OBJ := $(APP_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+APP_EXE := $(BIN_DIR)/app
 
 RES_DIR := resources
 SHD_DIR := shaders
 REL_DIR := release
 
-EXE := $(BIN_DIR)/app
-
-SRC := $(wildcard $(APP_SRC_DIR)/*.c) $(wildcard $(EXT_SRC_DIR)/*.c)
-SRC := $(notdir $(SRC))
-
 SHD := $(wildcard $(SHD_DIR)/*.vs) $(wildcard $(SHD_DIR)/*.fs)
 
-OBJ := $(SRC:%.c=$(OBJ_DIR)/%.o)
-
-CPPFLAGS := -Iinclude -Iextern/include -MMD -MP
+CPPFLAGS := -I$(INC_DIR) -MMD -MP
 CFLAGS   := -Wall
-LDFLAGS  := -Lextern/lib
-LDLIBS   := -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit
-
-vpath %.c $(APP_SRC_DIR) $(EXT_SRC_DIR)
+LDFLAGS  := -L$(LIB_DIR) -L$(BIN_DIR)
+LDLIBS   := -lengine -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit
 
 .PHONY: all clean
 
-all: $(EXE)
+all: $(APP_EXE) $(ENGINE_LIB)
 
-$(EXE): $(OBJ) | $(BIN_DIR)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+$(APP_EXE): $(APP_OBJ) $(ENGINE_LIB) | $(BIN_DIR)
+	$(CC) $(LDFLAGS) $(APP_OBJ) $(LDLIBS) -o $@
 
-$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
+$(APP_OBJ_DIR)/%.o: $(APP_SRC_DIR)/%.c | $(APP_OBJ_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-$(BIN_DIR) $(OBJ_DIR):
+$(ENGINE_LIB): $(ENGINE_OBJ) | $(BIN_DIR)
+	ar -r $@ $^
+
+$(ENGINE_OBJ_DIR)/%.o: $(ENGINE_SRC_DIR)/%.c | $(ENGINE_OBJ_DIR)
+	$(CC) -I$(ENGINE_INC_DIR) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+$(BIN_DIR) $(OBJ_DIR) $(APP_OBJ_DIR) $(ENGINE_OBJ_DIR):
 	mkdir -p $@
 
 release: $(EXE) $(SHD)
@@ -46,4 +60,4 @@ release: $(EXE) $(SHD)
 clean:
 	@$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
 
--include $(OBJ:.o=.d)
+-include $(ENGINE_OBJ:.o=.d)
